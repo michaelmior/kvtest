@@ -48,6 +48,10 @@
 \maketitle
 
 \begin{abstract}
+Applications which use key-value stores to execute higher-level queries may need to follow references obtained from previous keys.
+In the case where all data is contained in main memory, the bottleneck becomes the network transfer of values from the datastore to the application.
+When some keys become highly popular, network links to machines hosting these keys can become saturated and affect application performance.
+We demonstrate an approach that takes advantage of replication and network performance measurements to effectively route requests over underutilized links.
 \end{abstract}
 
 \section{Introduction}
@@ -56,11 +60,24 @@
 
 \section{Related Work}
 
-\cite{Xiong2014}
+The majority of work on query processing in key-value stores is in executing queries on data stored in distributed hash tables (DHTs) in peer-to-peer (P2P) networks.
+For example, Harren et al.~\cite{Harren2002} propose a basic query model for executing complex queries in this scenario.
+Their approach aims to minimize communication cost, but it is designed for P2P systems where the network is not under control of the application and is therefore unable to make use of network-aware techniques.
+PIER~\cite{Huebsch2005} is a similar query processing engine over DHTs which is also not network-aware.
+However, the query processing model used by PIER may be an interesting area to explore.
 
 \section{Evaluation}
 
+We run all our experiments on a simulated network on a single machine using Mininet~\cite{Lantz2010}.
+
 \section{Future Work}
+
+There are many opportunities to combine this work with appropriate key placement strategies for further performance optimizations.
+For heterogenous networks, a key placement strategy which is network and workload aware may provide significant performance advantages.
+Our current query execution model is very simplistic and could be expanded to support richer queries and distributed index data structures.
+We would also like to investigate other query types such as aggregation which we suspect would also benefit from our approach.
+Finally, our current system requires all intermediate values to be sent to the application which then coordinates all requests.
+Making the datastore a participant in query execution would reduce network bandwidth by allowing individual servers to follow the links between keys.
 
 \section{Conclusion}
 
