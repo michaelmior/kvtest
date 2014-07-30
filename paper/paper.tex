@@ -62,6 +62,9 @@ We demonstrate an approach that takes advantage of replication and network perfo
 
 \subsection{Architecture}
 
+\subsection{Flow Scheduling}
+
+Simple approaches to bandwith allocation such as max-min fairness pose significant problems in our settings.
 If we were to use fair share allocation, then the node with the largest share of the query results, bottlenecked by available bandwidth, would become a straggler.
 Nodes with a small share of query results could finish much more quickly only to wait for these stragglers.
 To minimize the overall completion time of queries, we can allocate bandwidth to each node as the fraction of query results which will be returned by the node.
@@ -70,6 +73,8 @@ However, the net result is a reduction in the average execution cost.
 
 We currently deal with a read-only workload where the distribution of data is known by all nodes.
 Each node is able to calculate the fraction of query results it will return.
+A node can signal the expected fraction of the results for a query it will return by setting bits within the packet header.
+When a new flow is issued for query processing, the controller can inspect these bits and assign an appropriate priority to each flow.
 
 \section{Related Work}
 
@@ -82,6 +87,8 @@ However, the query processing model used by PIER may be an interesting area to e
 \section{Evaluation}
 
 We run all our experiments on a simulated network on a single machine using Mininet~\cite{Lantz2010}.
+We use Open vSwitch~\cite{Pfaff2009} as our switch which supports queues with varying bandwidth guarantees.
+Our controller uses the POX~\cite{Gude2008} platform and OpenFlow~\cite{McKeown2008} 1.0.
 
 \section{Future Work}
 
@@ -89,11 +96,11 @@ There are many opportunities to combine this work with appropriate key placement
 For heterogenous networks, a key placement strategy which is network and workload aware may provide significant performance advantages.
 Our current query execution model is very simplistic and could be expanded to support richer queries and distributed index data structures.
 We would also like to investigate other query types such as aggregation which we suspect would also benefit from our approach.
-Finally, our current system requires all intermediate values to be sent to the application which then coordinates all requests.
-Making the datastore a participant in query execution would reduce network bandwidth by allowing individual servers to follow the links between keys.
+This presents new challenges in network scheduling, especially in the face of concurrent queries of multiple different types.
 
-We also have not dealt with the possibility of updates as well as replication.
+Our current system also does not deal with the possibility of updates or replication.
 There is potential to further exploit SDN techniques by allowing low latency updates to data in the presence of the high bandwidth flows used for query processing.
+Replication provides further opportunity for optimization as flows can be routed to multiple possible locations to avoid bottleneck links.
 
 \section{Conclusion}
 
