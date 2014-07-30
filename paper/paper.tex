@@ -56,7 +56,20 @@ We demonstrate an approach that takes advantage of replication and network perfo
 
 \section{Introduction}
 
-\section{System Architecture}
+\section{System Overview}
+
+\subsection{Query Model}
+
+\subsection{Architecture}
+
+If we were to use fair share allocation, then the node with the largest share of the query results, bottlenecked by available bandwidth, would become a straggler.
+Nodes with a small share of query results could finish much more quickly only to wait for these stragglers.
+To minimize the overall completion time of queries, we can allocate bandwidth to each node as the fraction of query results which will be returned by the node.
+This will speed up stragglers at the expense of slowing down nodes with a smaller allocation.
+However, the net result is a reduction in the average execution cost.
+
+We currently deal with a read-only workload where the distribution of data is known by all nodes.
+Each node is able to calculate the fraction of query results it will return.
 
 \section{Related Work}
 
@@ -78,6 +91,9 @@ Our current query execution model is very simplistic and could be expanded to su
 We would also like to investigate other query types such as aggregation which we suspect would also benefit from our approach.
 Finally, our current system requires all intermediate values to be sent to the application which then coordinates all requests.
 Making the datastore a participant in query execution would reduce network bandwidth by allowing individual servers to follow the links between keys.
+
+We also have not dealt with the possibility of updates as well as replication.
+There is potential to further exploit SDN techniques by allowing low latency updates to data in the presence of the high bandwidth flows used for query processing.
 
 \section{Conclusion}
 
