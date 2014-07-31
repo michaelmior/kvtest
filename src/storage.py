@@ -4,24 +4,11 @@ import os
 import sys
 import json
 
-# Add mininet to the path
-# sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                # 'mininet'))
-
 from mininet.topo import Topo
 
-CSV_BASE = 'xcui_csv/'
-
-class StarTopo(Topo):
-    def __init__(self, count):
-        self.count = count
-        Topo.__init__(self)
-
-        hosts = ['h%d' % i for i in range(count)]
-        switch = self.addSwitch('s')
-        for host in hosts:
-            self.addHost(host)
-            self.addLink(host, switch)
+# xcui's test csv
+# CSV_BASE = 'xcui_csv/'
+CSV_BASE = 'csv/'
 
 class Entity(object):
     foreign_keys = {}
@@ -43,17 +30,19 @@ class Entity(object):
 
             for row in reader:
                 id = row[0]
+                rowVal = dict()
                 for index, value in enumerate(row[1:]):
                     field = header[index + 1]
                     # Append the ID if we have a many-to-many relation or
                     # set the value directly otherwise
                     related = self.__class__.foreign_keys.get(field, None)
                     if related:
-                        self.store.append('%s:%s:%s' %
-                                (self.__class__.__name__, field, id), value)
+                        if field not in row:
+                            rowVal[field] = []
+                        rowVal[field].append(value)
                     else:
-                        self.store.set('%s:%s:%s' %
-                                (self.__class__.__name__, field, id), value)
+                        rowVal[field] = value
+                self.store.set(id, rowVal)
             # print(json.dumps(self.store.data))
 
 class User(Entity):
@@ -83,10 +72,10 @@ class Store(object):
     """
     def bucket(self, key):
         return hash(key) % len(self.data)
+
     """
     Set the value for the given key
     """
-
     def set(self, key, value):
         curBucket = self.bucket(key)
         if self.sId is not None:
@@ -124,7 +113,7 @@ In the current implementation, Query only works when we join all
 of the sharded tables together
 """
 class Query(object):
-    def __init__(self, entity, store):
+    def __init__(self, entity, store, IDs):
         self.entity = entity
         self.store = store
 
@@ -132,7 +121,7 @@ class Query(object):
     Execute a query to fetch the entity with the given ID and all its
     fields and related entities
     """
-    def execute(self, id):
+    def execute(self, ids):
         for field in self.entity.field_names:
             if field in self.entity.foreign_keys:
                 key = '%s:%s:%s' % (self.entity.__name__, field, id)
@@ -146,12 +135,13 @@ class Query(object):
 if __name__ == '__main__':
     # Read a couple entities, run some queries with known IDs
     # and print the distribution of data between buckets
-    n = 4
+    n = 1
     # topo = StarTopo(n)
-    store0 = Store(n, 0, 1)
+    store0 = Store(4, 0, 1)
     users = User(store0).read()
     items = Item(store0).read()
-
+    print store0.stats()
+"""
     store1 = Store(n, 1, 1)
     users = User(store1).read()
     items = Item(store1).read()
@@ -178,3 +168,4 @@ if __name__ == '__main__':
     print store2.stats()
     print store3.stats()
     print store.stats()
+"""

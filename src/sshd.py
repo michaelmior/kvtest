@@ -24,16 +24,21 @@ from mininet.log import lg
 from mininet.node import Node
 from mininet.topolib import TreeTopo
 from mininet.link import Link
-
-from CustomTopo import CustomTopo
 from mininet.node import CPULimitedHost
 from mininet.link import TCLink
+import os
+import inspect
+
+# adds the current dir i.e. src to system path to include sshd
+sys.path.append(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
+from CustomTopo import *
+
 
 def TreeNet( depth=1, fanout=2, **kwargs):
     "Convenience function for creating tree networks."
     # topo = TreeTopo( depth, fanout )
     topoLinkOpts = dict(bw=10, delay='5ms', loss=1, max_queue_size=1000, use_htb=True)
-    topo = CustomTopo(topoLinkOpts, topoLinkOpts, topoLinkOpts, fanout)
+    topo = DataCenter(topoLinkOpts, topoLinkOpts, topoLinkOpts, fanout)
     if not kwargs:
         kwargs = dict(host=CPULimitedHost, link=TCLink)
     return Mininet( topo, **kwargs )
@@ -86,5 +91,5 @@ if __name__ == '__main__':
     # useDNS=no -u0 to avoid reverse DNS lookup timeout
     opts = ' '.join( sys.argv[ 1: ] ) if len( sys.argv ) > 1 else (
         '-D -o UseDNS=no -u0' )
-    # our CustomTopo uses c1 as its root switch
+    # our DataCenter uses c1 as its root switch
     sshd( net, switch=net['c1'], opts=opts )

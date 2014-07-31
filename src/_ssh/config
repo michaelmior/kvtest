@@ -1,0 +1,43 @@
+Host 10.0.0.*
+StrictHostKeyChecking no
+UserKnownHostsFile=/dev/null
+
+Host h1
+     HostName 10.0.0.1
+     IdentityFile ~/.ssh/id_rsa
+     User mininet
+
+Host h2
+     HostName 10.0.0.2
+     IdentityFile ~/.ssh/id_rsa
+     User mininet
+
+Host h3
+     HostName 10.0.0.3
+     IdentityFile ~/.ssh/id_rsa
+     User mininet
+
+Host h4
+     HostName 10.0.0.4
+     IdentityFile ~/.ssh/id_rsa
+     User mininet
+
+Host h5
+     HostName 10.0.0.5
+     IdentityFile ~/.ssh/id_rsa
+     User mininet
+
+Host h6
+     HostName 10.0.0.6
+     IdentityFile ~/.ssh/id_rsa
+     User mininet
+
+Host h7
+     HostName 10.0.0.7
+     IdentityFile ~/.ssh/id_rsa
+     User mininet
+
+Host h8
+     HostName 10.0.0.8
+     IdentityFile ~/.ssh/id_rsa
+     User mininet
