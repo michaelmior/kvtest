@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT_DIR='/media/sf_vm_shared/latest//new_project/kvtest/src/'
+PROJECT_DIR='/mininet/src/'
 
 rm -rf  ~/.ssh/known_hosts
 for i in h{1..4}
