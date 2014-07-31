@@ -9,7 +9,7 @@ Files for this project will be available in `/mininet`.
 
 To run the server and the client code, first you need to start mininet:
 
-    cd src
+    cd /mininet/src
     sudo python CustomTopo.py
 
 CustomTopo will only run a simple tree topology with 4 hosts.
@@ -17,7 +17,7 @@ There are other topology definitions in `CustomTopo.py`.
 
 You can start the server by invoking
 
-    bash ./script/test.sh
+    ./scripts/test.sh
 
 Once the server is started, you can invoke the client using the command below.
 
@@ -25,4 +25,4 @@ Once the server is started, you can invoke the client using the command below.
 
 To end servers, invoke
 
-    bash ./script/clean.sh
+    ./scripts/clean.sh
