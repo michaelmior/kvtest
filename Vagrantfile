@@ -15,9 +15,11 @@ sudo module-assistant -i auto-install openvswitch-datapath
 sudo service openvswitch-switch start
 
 # Configure SSH
-cp /mininet/src/_ssh/id_rsa.* /home/vagrant/.ssh/
+cp /mininet/src/_ssh/id_rsa* /home/vagrant/.ssh/
 cat /mininet/src/_ssh/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys
+echo "StrictHostKeyChecking no" >> /home/vagrant/.ssh/config
 chmod og-rwx /home/vagrant/.ssh/*
+sudo chown -R vagrant:vagrant /home/vagrant/.ssh/*
 
 # Download data files
 wget -c http://mior.ca/up/rubis-csv.tar.gz -O /home/vagrant/rubis-csv.tar.gz
