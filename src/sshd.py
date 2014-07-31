@@ -27,10 +27,9 @@ from mininet.link import Link
 from mininet.node import CPULimitedHost
 from mininet.link import TCLink
 import os
-import inspect
 
 # adds the current dir i.e. src to system path to include sshd
-sys.path.append(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
+sys.path.append(os.path.dirname(__file__))
 from CustomTopo import *
 
 
