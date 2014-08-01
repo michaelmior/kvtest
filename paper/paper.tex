@@ -48,17 +48,61 @@
 \maketitle
 
 \begin{abstract}
-Applications which use key-value stores to execute higher-level queries may need to follow references obtained from previous keys.
+Applications which use key-value stores to execute higher-level queries need to aggregate data from multiple nodes.
 In the case where all data is contained in main memory, the bottleneck becomes the network transfer of values from the datastore to the application.
 When some keys become highly popular, network links to machines hosting these keys can become saturated and affect application performance.
-We demonstrate an approach that takes advantage of replication and network performance measurements to effectively route requests over underutilized links.
+In addition, nodes will compete with each other for bandwidth and uninformed traffic prioritization can result in reduced query execution time.
+We demonstrate an approach based on software-defined networking (SDN) that takes advantage of replication and network performance measurements to effectively route requests over underutilized links.
 \end{abstract}
 
 \section{Introduction}
 
+Recent trends have shown a proliferation of databases termed ``NoSQL'' which frequently eschew traditional database concepts such as referential integrity and ACID transactions for the sake of performance.
+However, applications using these databases still have a need to perform complex queries.
+Especially in the case of analytical queries, this may force the application designer to implement constructs such as joins at the application level.
+This requires a significant amount of data transfer between nodes.
+Given that it is common for data to be held in memory for performance reasons, the bottleneck for this data transfer is pushed up to the network layer.
+
+\begin{figure}
+    \centering
+    \missingfigure{Topology graph}
+    \caption{Sample network topology}\label{fig:sample-topology}
+\end{figure}
+
+Poor network scheduling can easily result in suboptimal query execution.
+For example, consider the simple topology shown in Figure~\ref{fig:sample-topology}.
+Assume a query is being processed that requires data to be sent between hosts A and C and hosts B and D that together will use the full capacity of all links in the network.
+If the flows have equal bandwidth requirements, then fair bandwidth allocation will perform well.
+However, if the flow between A and C requires twice the bandwidth of the flow between B and D, the first flow will have a longer completion time while it waits for available bandwidth.
+
+In this scenario, if we schedule traffic using weighted fair queuing and reserve additional bandwidth for the first flow, it will complete sooner.
+This results in a longer completion time for the second flow, but if we assume the query depends on all flows to be completed, we can see an overall reduction in query time.
+Similarly, in the face of replicated data, a network-aware query processing engine can select routes and replicas to maximize link utilization and improve performance.
+This type of intelligent network behaviour is difficult to configure in a traditional network stack.
+However, with the advent of SDN, it is possible for a smart SDN controller to make global decisions based on the knowledge of higher-level application queries.
+
 \section{System Overview}
 
 \subsection{Query Model}
+
+\begin{figure}
+    \centering
+    \missingfigure{ER diagram}
+    \caption{Simple query entities}\label{fig:entities}
+\end{figure}
+
+Our prototype system considers foreign key join queries between entity sets with a fixed join order and simple filtering on attributes of the first entity set.
+For example, assume we have two entity sets \texttt{User} and \texttt{Item} with a one-to-many foreign key relating a user to each item as in Figure~\ref{fig:entities}.
+A query (in SQL) syntax may look like \texttt{SELECT * FROM User, Item WHERE Item.User\_id = User.id AND Item.price > 20}.
+In the future, we plan to consider a richer query language.
+This will also present more interesting opportunities for optimization.
+
+The execution model for these queries is very straightforward.
+We consider the execution of the simple query given above.
+We start by passing the query to each node which has entities of the class on the left side of the join (\texttt{Item}).
+Those nodes will scan their local list of entities and apply the necessary filters (\texttt{price > 20}).
+Each node then forwards the necessary foreign keys to nodes holding entites of the class on the right side of the join (\texttt{User}).
+These nodes are then able to look up entities on the other side of the join and results can be passed back to the client.
 
 \subsection{Architecture}
 
@@ -84,11 +128,21 @@ Their approach aims to minimize communication cost, but it is designed for P2P s
 PIER~\cite{Huebsch2005} is a similar query processing engine over DHTs which is also not network-aware.
 However, the query processing model used by PIER may be an interesting area to explore.
 
+There has also been some work in exploiting software-defined networking for big data applications.
+Wang et al.~\cite{Wang2012} examined network traffic patterns in a Hadoop cluster and identified opportunities to combine network-aware job scheduling with dynamic routing configuration to improve job completion time.
+Xiong et al.~\cite{Xiong2014} examine the usefulness of software-defined networking in supporting distributed analytical queries.
+Their workload consits of read-only SQL queries where query processing is bandwidth-intensive.
+They construct a global query optimizer which decides on join order and how query results should be passed between sites.
+This work takes a similar approach to ours, but also identifies many opportunities for further work.
+
 \section{Evaluation}
 
 We run all our experiments on a simulated network on a single machine using Mininet~\cite{Lantz2010}.
 We use Open vSwitch~\cite{Pfaff2009} as our switch which supports queues with varying bandwidth guarantees.
 Our controller uses the POX~\cite{Gude2008} platform and OpenFlow~\cite{McKeown2008} 1.0.
+
+Queries use data taken from the RUBiS~\cite{Cecchet2002} benchmark, which is a Web application simulating an online auction.
+We distribute data on users and the items they are selling between all nodes with no replication.
 
 \section{Future Work}
 
