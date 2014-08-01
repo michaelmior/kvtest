@@ -106,6 +106,9 @@ These nodes are then able to look up entities on the other side of the join and 
 
 \subsection{Architecture}
 
+Our system uses OpenFlow~\cite{McKeown2008} enabled switches to allow centralized network control.
+We currently pass all queries through our SDN controller which is running on the POX~\cite{Gude2008} platform.
+
 \subsection{Flow Scheduling}
 
 Simple approaches to bandwith allocation such as max-min fairness pose significant problems in our settings.
@@ -119,6 +122,15 @@ We currently deal with a read-only workload where the distribution of data is kn
 Each node is able to calculate the fraction of query results it will return.
 A node can signal the expected fraction of the results for a query it will return by setting bits within the packet header.
 When a new flow is issued for query processing, the controller can inspect these bits and assign an appropriate priority to each flow.
+The controller is similar to a simple L2 learning switch.
+However, we configure several queues for each switch port which allow us to provide bandwidth reservations to support variation in expected traffic volume.
+
+We also change the flow table rules we install to match on the type of service (ToS) bits in the IP header.
+Two of these eight bits are often used for explicit congestion notification (ECN).
+We avoid these bits to allow ECN to operate uninhibited.
+The remaining six bits are the differentiated services code point (DSCP) which are used to provide varying QoS guarantees for different flows.
+We assume that the portion of the network our system is operating on is not carrying other traffic so we are free to set these bits as we choose.
+To interconnect with other networks which may assign different meaning to these bits, we can simply zero these bits for any traffic passing through ingress/egress switches.
 
 \section{Related Work}
 
