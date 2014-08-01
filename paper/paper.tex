@@ -84,6 +84,13 @@ Their approach aims to minimize communication cost, but it is designed for P2P s
 PIER~\cite{Huebsch2005} is a similar query processing engine over DHTs which is also not network-aware.
 However, the query processing model used by PIER may be an interesting area to explore.
 
+There has also been some work in exploiting software-defined networking for big data applications.
+Wang et al.~\cite{Wang2012} examined network traffic patterns in a Hadoop cluster and identified opportunities to combine network-aware job scheduling with dynamic routing configuration to improve job completion time.
+Xiong et al.~\cite{Xiong2014} examine the usefulness of software-defined networking in supporting distributed analytical queries.
+Their workload consits of read-only SQL queries where query processing is bandwidth-intensive.
+They construct a global query optimizer which decides on join order and how query results should be passed between sites.
+This work takes a similar approach to ours, but also identifies many opportunities for further work.
+
 \section{Evaluation}
 
 We run all our experiments on a simulated network on a single machine using Mininet~\cite{Lantz2010}.
