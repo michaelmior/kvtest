@@ -97,6 +97,9 @@ We run all our experiments on a simulated network on a single machine using Mini
 We use Open vSwitch~\cite{Pfaff2009} as our switch which supports queues with varying bandwidth guarantees.
 Our controller uses the POX~\cite{Gude2008} platform and OpenFlow~\cite{McKeown2008} 1.0.
 
+Queries use data taken from the RUBiS~\cite{Cecchet2002} benchmark, which is a Web application simulating an online auction.
+We distribute data on users and the items they are selling between all nodes with no replication.
+
 \section{Future Work}
 
 There are many opportunities to combine this work with appropriate key placement strategies for further performance optimizations.
