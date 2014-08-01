@@ -48,9 +48,10 @@
 \maketitle
 
 \begin{abstract}
-Applications which use key-value stores to execute higher-level queries may need to follow references obtained from previous keys.
+Applications which use key-value stores to execute higher-level queries need to aggregate data from multiple nodes.
 In the case where all data is contained in main memory, the bottleneck becomes the network transfer of values from the datastore to the application.
 When some keys become highly popular, network links to machines hosting these keys can become saturated and affect application performance.
+In addition, nodes will compete with each other for bandwidth and uninformed traffic prioritization can result in reduced query execution time.
 We demonstrate an approach that takes advantage of replication and network performance measurements to effectively route requests over underutilized links.
 \end{abstract}
 
