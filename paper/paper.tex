@@ -85,6 +85,25 @@ However, with the advent of SDN, it is possible for a smart SDN controller to ma
 
 \subsection{Query Model}
 
+\begin{figure}
+    \centering
+    \missingfigure{ER diagram}
+    \caption{Simple query entities}\label{fig:entities}
+\end{figure}
+
+Our prototype system considers foreign key join queries between entity sets with a fixed join order and simple filtering on attributes of the first entity set.
+For example, assume we have two entity sets \texttt{User} and \texttt{Item} with a one-to-many foreign key relating a user to each item as in Figure~\ref{fig:entities}.
+A query (in SQL) syntax may look like \texttt{SELECT * FROM User, Item WHERE Item.User\_id = User.id AND Item.price > 20}.
+In the future, we plan to consider a richer query language.
+This will also present more interesting opportunities for optimization.
+
+The execution model for these queries is very straightforward.
+We consider the execution of the simple query given above.
+We start by passing the query to each node which has entities of the class on the left side of the join (\texttt{Item}).
+Those nodes will scan their local list of entities and apply the necessary filters (\texttt{price > 20}).
+Each node then forwards the necessary foreign keys to nodes holding entites of the class on the right side of the join (\texttt{User}).
+These nodes are then able to look up entities on the other side of the join and results can be passed back to the client.
+
 \subsection{Architecture}
 
 \subsection{Flow Scheduling}
