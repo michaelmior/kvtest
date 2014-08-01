@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import collections
 import csv
 import os
@@ -6,9 +7,11 @@ import json
 
 from mininet.topo import Topo
 
+from joinHelpers import err
+
 # xcui's test csv
-# CSV_BASE = 'xcui_csv/'
-CSV_BASE = 'csv/'
+CSV_BASE = 'xcui_csv/'
+# CSV_BASE = 'csv/'
 
 class Entity(object):
     foreign_keys = {}
@@ -29,7 +32,8 @@ class Entity(object):
             self.__class__.field_names = header
 
             for row in reader:
-                id = row[0]
+                id = str(row[0])
+                id = self.csv_name + ':' + id
                 rowVal = dict()
                 for index, value in enumerate(row[1:]):
                     field = header[index + 1]
@@ -63,7 +67,9 @@ class Store(object):
     """
     def __init__(self, num, sId = None, rFactor = 1):
         self.sId = sId
-        self.data = [collections.defaultdict(lambda: []) for _ in range(num)]
+        self.data = []
+        for i in range(num):
+            self.data.append({})
         if sId is not None:
             self.shard = [_ % num for _  in range(sId, sId + rFactor)]
 
@@ -74,6 +80,13 @@ class Store(object):
         return hash(key) % len(self.data)
 
     """
+    Return the sIds for which have this key
+    """
+    def getServerIds(self, key):
+        # We do not have replication at this stage, so we just return the hash
+        return [self.bucket(key)]
+
+    """
     Set the value for the given key
     """
     def set(self, key, value):
@@ -81,6 +94,9 @@ class Store(object):
         if self.sId is not None:
             if curBucket in self.shard:
                 self.data[curBucket][key] = value
+            else:
+                # not part this store's bucket
+                pass
         else:
             self.data[curBucket][key] = value
 
@@ -100,7 +116,8 @@ class Store(object):
     """
     def get(self, key):
         bucket = self.bucket(key)
-        return (bucket, self.data[bucket].get(key))
+        # return (bucket, self.data[bucket])
+        return self.data[bucket][key]
 
     """
     Return the number of keys stored in each bucket
@@ -135,37 +152,10 @@ class Query(object):
 if __name__ == '__main__':
     # Read a couple entities, run some queries with known IDs
     # and print the distribution of data between buckets
-    n = 1
+    n = 4
     # topo = StarTopo(n)
-    store0 = Store(4, 0, 1)
+    store0 = Store(n, 3, 1)
     users = User(store0).read()
     items = Item(store0).read()
+    print(store0.get('items:533721')[1]['seller'])
     print store0.stats()
-"""
-    store1 = Store(n, 1, 1)
-    users = User(store1).read()
-    items = Item(store1).read()
-
-    store2 = Store(n, 2, 1)
-    users = User(store2).read()
-    items = Item(store2).read()
-
-    store3 = Store(n, 3, 1)
-    users = User(store3).read()
-    items = Item(store3).read()
-
-    store = Store(n, 0, 0)
-    store.data[0] = store0.data[0]
-    store.data[1] = store1.data[1]
-    store.data[2] = store2.data[2]
-    store.data[3] = store3.data[3]
-
-    for id in range(533721, 533721 + 1):
-        rtn = Query(Item, store).execute(str(id))
-
-    print store0.stats()
-    print store1.stats()
-    print store2.stats()
-    print store3.stats()
-    print store.stats()
-"""
