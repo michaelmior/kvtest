@@ -5,6 +5,9 @@ To provision and start the VM, run `vagrant up` in the project directory.
 To connect to the VM, simply run `vagrant ssh`.
 Files for this project will be available in `/mininet`.
 
+This configuration uses a base VM created with [Packer](http://packer.io/).
+If necessary, this VM can be rebuilt by installing packer and running `packer build ubuntu64.json` in the `packer/` directory.
+
 # Running
 
 To run the server and the client code, first you need to start mininet:
