@@ -52,10 +52,28 @@ Applications which use key-value stores to execute higher-level queries need to 
 In the case where all data is contained in main memory, the bottleneck becomes the network transfer of values from the datastore to the application.
 When some keys become highly popular, network links to machines hosting these keys can become saturated and affect application performance.
 In addition, nodes will compete with each other for bandwidth and uninformed traffic prioritization can result in reduced query execution time.
-We demonstrate an approach that takes advantage of replication and network performance measurements to effectively route requests over underutilized links.
+We demonstrate an approach based on software-defined networking (SDN) that takes advantage of replication and network performance measurements to effectively route requests over underutilized links.
 \end{abstract}
 
 \section{Introduction}
+
+Recent trends have shown a proliferation of databases termed ``NoSQL'' which frequently eschew traditional database concepts such as referential integrity and ACID transactions for the sake of performance.
+However, applications using these databases still have a need to perform complex queries.
+Especially in the case of analytical queries, this may force the application designer to implement constructs such as joins at the application level.
+This requires a significant amount of data transfer between nodes.
+Given that it is common for data to be held in memory for performance reasons, the bottleneck for this data transfer is pushed up to the network layer.
+
+Poor network scheduling can easily result in suboptimal query execution.
+For example, consider the simple topology shown in XXXX.
+Assume a query is being processed that requires data to be sent between hosts A and C and hosts B and D that together will use the full capacity of all links in the network.
+If the flows have equal bandwidth requirements, then fair bandwidth allocation will perform well.
+However, if the flow between A and C requires twice the bandwidth of the flow between B and D, the first flow will have a longer completion time while it waits for available bandwidth.
+
+In this scenario, if we schedule traffic using weighted fair queuing and reserve additional bandwidth for the first flow, it will complete sooner.
+This results in a longer completion time for the second flow, but if we assume the query depends on all flows to be completed, we can see an overall reduction in query time.
+Similarly, in the face of replicated data, a network-aware query processing engine can select routes and replicas to maximize link utilization and improve performance.
+This type of intelligent network behaviour is difficult to configure in a traditional network stack.
+However, with the advent of SDN, it is possible for a smart SDN controller to make global decisions based on the knowledge of higher-level application queries.
 
 \section{System Overview}
 
