@@ -4,13 +4,19 @@ import csv
 import os
 import sys
 import json
+import inspect
 
 from mininet.topo import Topo
 
+
+# adds the current dir i.e. src to system path
+sys.path.append(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
 from joinHelpers import err
+from joinHelpers import config
+
 
 # xcui's test csv
-CSV_BASE = 'xcui_csv/'
+CSV_BASE = config['CSV_BASE']
 # CSV_BASE = 'csv/'
 
 class Entity(object):
@@ -48,6 +54,7 @@ class Entity(object):
                         rowVal[field] = value
                 self.store.set(id, rowVal)
             # print(json.dumps(self.store.data))
+        print >> sys.stderr, 'Loading Completed for %s...' % self.csv_name
 
 class User(Entity):
     csv_name = 'users'
