@@ -108,6 +108,17 @@ These nodes are then able to look up entities on the other side of the join and 
 
 Our system uses OpenFlow~\cite{McKeown2008} enabled switches to allow centralized network control.
 We currently pass all queries through our SDN controller which is running on the POX~\cite{Gude2008} platform.
+Each host on the network contains a simple document store which is capable of answering requests both from client queries and other servers in the network.
+When a query is received from a client, the server looks up entities on the left-hand side of the join in its local storage and requests the entities on the right side of the join from other servers in the network.
+When a server receives a request from another server, it looks up the necessary entities to be joined locally and sends the reply back to the requesting server.
+Once the server processing a client request receives responses from the other servers on the network, it can send a final response back to the client.
+
+This results in the issue of stragglers we presented previously.
+Note that the common technique of issuing a request multiple times to avoid stragglers is not helpful in our scenario.
+As previously stated, our performance is bottlenecked by the available bandwidth.
+Stragglers exist in our system because of a lack of available bandwidth as opposed to variations in node performance (which is what multiple issuance is designed to mitigate).
+Furthermore, multiple issuance would place even stronger bandwidth pressure on our network, causing additional performance issues.
+Instead, we mitigate the effect of stragglers by adjusting the bandwidth allocation for each flow.
 
 \subsection{Flow Scheduling}
 
