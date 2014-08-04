@@ -152,8 +152,18 @@ PIER~\cite{Huebsch2005} is a similar query processing engine over DHTs which is 
 However, the query processing model used by PIER may be an interesting area to explore.
 
 There has also been some work in exploiting software-defined networking for big data applications.
-Wang et al.~\cite{Wang2012} examined network traffic patterns in a Hadoop cluster and identified opportunities to combine network-aware job scheduling with dynamic routing configuration to improve job completion time.
-Xiong et al.~\cite{Xiong2014} examine the usefulness of software-defined networking in supporting distributed analytical queries.
+Wang et al.~\cite{Wang2012} examined network traffic patterns in a Hadoop~\cite{Shvachko2010} cluster and identified opportunities to combine network-aware job scheduling with dynamic routing configuration to improve job completion time.
+SmartJoin~\cite{Slagter2014} also examines network traffic patterns in Hadoop, specifically for join queries executed as MapReduce jobs.
+SmartJoin attempts to balance the overhead of sending tuples to remote servers to be processed with the performance gains of parallel query processing.
+These works hint at the benefits of network aware data processing systems, but focus on MapReduce jobs, while we we are interested in query processing over NoSQL database engines.
+
+CloudTPS~\cite{Wei2012} provides a join query processing layer on top of NoSQL stores which enforces ACID semantics for transactions.
+Our system does not currently consider transactional consistency, so this could be an interesting area to explore.
+R\"{o}diger et al.~\cite{Rodiger2014} examine the affects of data locality with respect to distributed query processing.
+Their Neo-Join algorithm is designed for efficient network usage by repartitioning data and scheduling network transfers to avoid cross-traffic.
+These techniques exert no control over the network, which may provide further opportunities for optimization.
+
+For example, Xiong et al.~\cite{Xiong2014} examine the usefulness of software-defined networking in supporting distributed analytical queries.
 Their workload consits of read-only SQL queries where query processing is bandwidth-intensive.
 They construct a global query optimizer which decides on join order and how query results should be passed between sites.
 This work takes a similar approach to ours, but also identifies many opportunities for further work.
