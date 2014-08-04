@@ -4,13 +4,12 @@ import csv
 import os
 import sys
 import json
-import inspect
 
 from mininet.topo import Topo
 
 
 # adds the current dir i.e. src to system path
-sys.path.append(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
+sys.path.append(os.path.dirname(__file__))
 from joinHelpers import err
 from joinHelpers import config
 

@@ -6,13 +6,12 @@ import commands
 import json
 import threading
 import os
-import inspect
 import traceback
 import ast
 import struct
 
 # adds the current dir i.e. src to system path
-sys.path.append(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
+sys.path.append(os.path.dirname(__file__))
 from joinHelpers import BarrierSync
 from joinHelpers import config
 from joinHelpers import err
