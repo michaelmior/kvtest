@@ -1,0 +1,11 @@
+1.
+Ignore 10mbps/client_bw*.
+These results are generated using a mixed topology setting using both Mininet & queue_new.sh
+
+
+2.
+'norm' means the result is generated without scheduling of network traffic
+'scheuling' means the result is generated with scheduling.
+
+3.
+Directory names stand for the maximum link capcity.
