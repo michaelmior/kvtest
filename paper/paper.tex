@@ -79,7 +79,16 @@ In this scenario, if we schedule traffic using weighted fair queuing and reserve
 This results in a longer completion time for the second flow, but if we assume the query depends on all flows to be completed, we can see an overall reduction in query time.
 Similarly, in the face of replicated data, a network-aware query processing engine can select routes and replicas to maximize link utilization and improve performance.
 This type of intelligent network behaviour is difficult to configure in a traditional network stack.
-However, with the advent of SDN, it is possible for a smart SDN controller to make global decisions based on the knowledge of higher-level application queries.
+With the advent of software-define networking (SDN), it is possible for a smart SDN controller to make global decisions based on the knowledge of higher-level application queries.
+Furthermore, the controller can dynamically adapt the network to improve query processing efficiency.
+
+As we discuss later, some existing query processing engines take into account network topology and link utilization when scheduling distributed queries.
+However, there is relatively little work expoloiting dynamic reconfiguration of the network to support query processing.
+A centralized network controller which is aware of the dynamics of query processing is able to make smart routing decisions to optimize performance.
+For example, flows for queries which are latency sensitive can be given priority over highly utilized links, while other flows can be routed to longer paths with lower utilization.
+This can be done dynamically based on the state of the network.
+Furthermore, the routing can be done using hardware switches as opposed to intelligent software routers, which minimizes latency and improves scalability.
+In this work, we examine one possible application of SDN for improving the throughput of distributed join queries.
 
 \section{System Overview}
 
