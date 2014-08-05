@@ -30,6 +30,7 @@ import sys
 
 sys.path.append('/mininet/src/')
 from joinHelpers import err
+from joinHelpers import LoadDifferentiator
 
 log = core.getLogger()
 
@@ -78,11 +79,16 @@ class LearningSwitch (object):
      flow goes out the appopriate port
      6a) Send the packet out appropriate port
   """
-  def __init__ (self, connection, transparent):
+  def __init__ (self, connection, transparent, traffic_scheduling = False):
     # sys.err.write(' XCLKJDSLFKJDSLKJFLDKSJ')
     # Switch we'll be adding L2 learning switch capabilities to
     self.connection = connection
     self.transparent = transparent
+
+    self.ld = LoadDifferentiator()
+    if(traffic_scheduling == 'True'):
+      traffic_scheduling = True
+    self.traffic_scheduling = traffic_scheduling
 
     # Our table
     self.macToPort = {}
@@ -174,11 +180,15 @@ class LearningSwitch (object):
         msg.match = of.ofp_match.from_packet(packet, event.port)
         msg.idle_timeout = 10
         msg.hard_timeout = 30
-        if(packet.type == 0x0800):
-          err((packet.payload.tos, packet.payload))
-          msg.actions.append(of.ofp_action_enqueue(port = port, queue_id = 10))
+        if self.traffic_scheduling:
+          if(packet.type == 0x0800):
+            queue_num = self.ld.dscp_to_queue_num(packet.payload.tos >> 2)
+            err((packet.payload.tos, queue_num, packet.payload))
+            msg.actions.append(of.ofp_action_enqueue(port = port, queue_id = queue_num))
+          else:
+            msg.actions.append(of.ofp_action_enqueue(port = port, queue_id = 6))
         else:
-          msg.actions.append(of.ofp_action_enqueue(port = port, queue_id = 10))
+          msg.actions.append(of.ofp_action_enqueue(port = port, queue_id = 0))
         msg.data = event.ofp # 6a
         self.connection.send(msg)
 
@@ -187,17 +197,18 @@ class l2_learning (object):
   """
   Waits for OpenFlow switches to connect and makes them learning switches.
   """
-  def __init__ (self, transparent):
+  def __init__ (self, transparent, traffic_scheduling):
     log.info('in init')
     core.openflow.addListeners(self)
     self.transparent = transparent
+    self.traffic_scheduling = traffic_scheduling
 
   def _handle_ConnectionUp (self, event):
     log.debug("Connection %s" % (event.connection,))
-    LearningSwitch(event.connection, self.transparent)
+    LearningSwitch(event.connection, self.transparent, self.traffic_scheduling)
 
 
-def launch (transparent=False, hold_down=_flood_delay):
+def launch (transparent=False, hold_down=_flood_delay, traffic_scheduling = False):
   """
   Starts an L2 learning switch.
   """
@@ -208,4 +219,4 @@ def launch (transparent=False, hold_down=_flood_delay):
   except:
     raise RuntimeError("Expected hold-down to be a number")
 
-  core.registerNew(l2_learning, str_to_bool(transparent))
+  core.registerNew(l2_learning, str_to_bool(transparent), traffic_scheduling)

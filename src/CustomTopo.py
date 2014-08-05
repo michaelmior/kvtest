@@ -11,13 +11,18 @@ from mininet.net import Controller
 # adds the current dir i.e. src to system path to include sshd
 sys.path.append(os.path.dirname(__file__))
 from sshd import *
+from joinHelpers import config
+
 
 class ControllerV1(Controller):
-    "Custom COntroller class to invoke our own forwarding.controller_v1"
+    "Custom Controller class to invoke our own forwarding.controller_v1"
     def start(self):
         "Starting controller v1"
         self.pox = '%s/pox/pox.py' % os.environ['HOME']
-        self.cmd(self.pox, 'controller_v1 1> /mininet/src/out/pox.out 2>&1 &')
+        if(config['TRAFFIC_SCHEDULING'] == True):
+            self.cmd(self.pox, 'controller_v1 --traffic_scheduling=True 1> /mininet/src/out/pox.out 2>&1 &')
+        else:
+            self.cmd(self.pox, 'controller_v1 1> /mininet/src/out/pox.out 2>&1 &')
     def stop(self):
         "Stopping controller v1"
         self.cmd('kill %' + self.pox)
@@ -106,10 +111,10 @@ def testDataCenter():
 
 def testSimpleDC():
     setLogLevel('info')
-    linkopts = dict(bw=3, delay='5ms', use_htb=True)
-    netopts = dict(host=CPULimitedHost, link=TCLink)
+    linkopts = dict()
+    netopts = dict()
     topo = SimpleDC(linkopts, linkopts, 2);
-    net = Mininet(topo = topo,host=CPULimitedHost,link=TCLink, controller = ControllerV1)
+    net = Mininet(topo = topo, controller = ControllerV1)
     sshdOpts = '-D -o UseDNS=no -u0'
     sshd(net, switch=net['c1'], opts=sshdOpts)
 

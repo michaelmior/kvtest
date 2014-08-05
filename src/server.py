@@ -10,6 +10,7 @@ import os
 import traceback
 import ast
 import struct
+import re
 
 # adds the current dir i.e. src to system path
 sys.path.append(os.path.dirname(__file__))
@@ -31,6 +32,8 @@ PORT = int(config['SERVER_PORT']) # Arbitrary non-privileged port
 
 TRAFFIC_SCHEDULING = False
 LD = LoadDifferentiator()
+
+SERVER_IP_REGEX = re.compile('.*?\d+\.\d+\.\d+\.(\d+).*')
 
 def get_server_id():
     # hostname = [(s.connect(('8.8.8.8', 80)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]
@@ -63,10 +66,18 @@ def fetch_users(sId, tuples, result_container, result_sema, barrier,
     s.close()
     barrier.sync(waitNum)
 
-def serve_user_op(client_socket, storage, client_ids):
+def serve_user_op(client_socket, client_addr, storage, client_ids):
     rtn = dict()
     for client_id in client_ids:
         rtn[client_id] = storage.get(client_id)
+    if TRAFFIC_SCHEDULING:
+        matched = SERVER_IP_REGEX.match(str(client_addr))
+        assert matched != None
+        # The 'client' is actually a server with an ID in this case
+        client_server_id = int(matched.group(1)) - 1
+        # err((client_server_id, client_addr))
+        dscp = LD.assign_dscp(client_server_id)
+        client_socket.setsockopt(socket.SOL_IP, socket.IP_TOS, dscp << 2)
     socket_send_data_by_json(client_socket, rtn)
 
 def handleJoinItemUserOp(clientsocket, addr, storage, serverId, item_ids):
@@ -116,7 +127,7 @@ def handleJoinItemUserOp(clientsocket, addr, storage, serverId, item_ids):
     return result
 
 
-def serve(client_socket, addr, storage, serverId):
+def serve(client_socket, addr, storage, server_id):
     """ Each serve call is a new thread that serves requests """
     lenBuf = client_socket.recv(4)
     dataLen = struct.unpack('>L', lenBuf)[0]
@@ -126,11 +137,14 @@ def serve(client_socket, addr, storage, serverId):
     ids = dataDict[config['IDs']]
     op = dataDict[config['OP']]
     if(op == config['JOIN_ITEM_USER_OP']):
-        result = handleJoinItemUserOp(client_socket,addr, storage, serverId, ids)
+        result = handleJoinItemUserOp(client_socket,addr, storage, server_id, ids)
         # Send data
+        if TRAFFIC_SCHEDULING:
+            dscp = LD.assign_dscp(server_id)
+            client_socket.setsockopt(socket.SOL_IP, socket.IP_TOS, dscp << 2)
         socket_send_data_by_json(client_socket, result)
     elif(op == config['USERS_OP']):
-        serve_user_op(client_socket, storage, ids)
+        serve_user_op(client_socket, addr, storage, ids)
     else:
         err(('SHOULD NOT REACH HERE, NO OP to handle:', op))
     client_socket.close()
@@ -140,19 +154,17 @@ def startServer(sId = None, rFactor = 1):
     store = Store(NUM_HOST, sId, rFactor)
     users = User(store).read()
     items = Item(store).read()
-    serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    serverSocket.bind((HOST, PORT))
-    serverSocket.listen(5)
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server_socket.bind((HOST, PORT))
+    server_socket.listen(5)
     while 1:
-        conn, addr = serverSocket.accept()
+        conn, addr = server_socket.accept()
         # print >> sys.stderr, 'Connected by', addr
         thread.start_new_thread(serve, (conn, addr, store, sId))
 
 if __name__ == '__main__':
-    if(len(sys.argv) != 2):
-        err('Usage: ./server.py turn_on_traffic_scheduling[True|False]')
-        sys.exit()
-    if(sys.argv[1] == 'True'):
+    if(config['TRAFFIC_SCHEDULING'] == True):
         TRAFFIC_SCHEDULING = True
     server_id = get_server_id()
     err("Server " + str(server_id) + " is initializing...")

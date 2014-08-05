@@ -8,6 +8,8 @@ import json
 import struct
 
 config = {
+    'TRAFFIC_SCHEDULING' : False,
+
     'SERVER_PORT' : 50007,
     'NUM_HOST': 4,  # Update when when change topology
     'CSV_BASE': 'csv/',  # source of RUBiS data
@@ -126,12 +128,16 @@ class LoadDifferentiator(object):
         else:
             return 36
     def dscp_to_queue_num(self, dscp):
+        """
+        Converts dscp value to queue num
+        Default return value is queue # 6 which should be treated with highest priority
+        """
         return {
             6: 5,
             16: 3,
             26: 2,
             36: 1
-        }[dscp]
+        }.get(dscp, 6)
 
 
 # End of the quick & dirty implementation to have load differentiiation on servers
@@ -141,4 +147,4 @@ if __name__ == '__main__':
     ld = LoadDifferentiator()
     print ld.max_buckets
     print ld.assign_dscp(3)
-    print ld.dscp_to_queue_num(26)
+    print ld.dscp_to_queue_num(46)
