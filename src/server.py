@@ -1,4 +1,5 @@
-# Echo server program
+#!/usr/bin/env python
+
 import socket
 import thread
 import sys
@@ -18,6 +19,7 @@ from joinHelpers import err
 from joinHelpers import socket_read_n
 from joinHelpers import socket_send_data_by_json
 from joinHelpers import socket_recv_data_by_json
+from joinHelpers import LoadDifferentiator
 from storage import *
 
 
@@ -27,7 +29,10 @@ HOST = ''    # Symbolic name meaning the local host
 # TODO: Read this port number form a configuration file
 PORT = int(config['SERVER_PORT']) # Arbitrary non-privileged port
 
-def getServerId():
+TRAFFIC_SCHEDULING = False
+LD = LoadDifferentiator()
+
+def get_server_id():
     # hostname = [(s.connect(('8.8.8.8', 80)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]
     # print(commands.getoutput("/sbin/ifconfig").split("\n")[1])
     ip = commands.getoutput("/sbin/ifconfig").split("\n")[1].split()[1][5:]
@@ -35,15 +40,18 @@ def getServerId():
     return rtn
 
 def fetch_users(sId, tuples, result_container, result_sema, barrier,
-                waitNum, partial_result):
+                waitNum, partial_result, origin_server_id):
     server_address = '10.0.0.' + str(sId + 1)
     # this socket is talking to another server to fetch relevant user data
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((server_address, PORT))
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    if TRAFFIC_SCHEDULING:
+        dscp = LD.assign_dscp(origin_server_id)
+        s.setsockopt(socket.SOL_IP, socket.IP_TOS, dscp << 2)
+    s.connect((server_address, PORT))
     allData = {config['OP'] : config['USERS_OP'],
                config['IDs'] : tuples}
-    socket_send_data_by_json(sock, allData)
-    partial_seller_result = socket_recv_data_by_json(sock)
+    socket_send_data_by_json(s, allData)
+    partial_seller_result = socket_recv_data_by_json(s)
     for key in partial_result:
         # err(partial_seller_result)
         # There is no replication at the moment so we can safely grab first item in [0]
@@ -52,7 +60,7 @@ def fetch_users(sId, tuples, result_container, result_sema, barrier,
         partial_result[key]['seller_info'] = seller_info
     with result_sema:
         result_container.update(partial_result)
-    sock.close()
+    s.close()
     barrier.sync(waitNum)
 
 def serve_user_op(client_socket, storage, client_ids):
@@ -101,7 +109,7 @@ def handleJoinItemUserOp(clientsocket, addr, storage, serverId, item_ids):
     barrier = BarrierSync()
     for key in other_traffics.keys():
         fetch_users_input = (key, other_traffics[key], result, result_sema,
-                             barrier, waitNum, partial_results[key])
+                             barrier, waitNum, partial_results[key], serverId)
         thread.start_new_thread(fetch_users, fetch_users_input)
         # err(('keys', key))
     barrier.sync(waitNum)
@@ -141,6 +149,11 @@ def startServer(sId = None, rFactor = 1):
         thread.start_new_thread(serve, (conn, addr, store, sId))
 
 if __name__ == '__main__':
-    sId = getServerId()
-    err("Server " + str(sId) + " is initializing...")
-    startServer(sId, rFactor = 1)
+    if(len(sys.argv) != 2):
+        err('Usage: ./server.py turn_on_traffic_scheduling[True|False]')
+        sys.exit()
+    if(sys.argv[1] == 'True'):
+        TRAFFIC_SCHEDULING = True
+    server_id = get_server_id()
+    err("Server " + str(server_id) + " is initializing...")
+    startServer(server_id, rFactor = 1)

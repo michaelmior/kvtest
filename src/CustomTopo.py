@@ -6,10 +6,21 @@ from mininet.link import TCLink
 from mininet.cli import CLI
 import os
 import sys
+from mininet.net import Controller
 
 # adds the current dir i.e. src to system path to include sshd
 sys.path.append(os.path.dirname(__file__))
 from sshd import *
+
+class ControllerV1(Controller):
+    "Custom COntroller class to invoke our own forwarding.controller_v1"
+    def start(self):
+        "Starting controller v1"
+        self.pox = '%s/pox/pox.py' % os.environ['HOME']
+        self.cmd(self.pox, 'controller_v1 1> /mininet/src/out/pox.out 2>&1 &')
+    def stop(self):
+        "Stopping controller v1"
+        self.cmd('kill %' + self.pox)
 
 class DataCenter(Topo):
     "Simple Data Center Topology"
@@ -74,7 +85,7 @@ class TwoThreeTopo(Topo):
         sshdOpts = '-D -o UseDNS=no -u0'
         sshd
 
-default_linkopts = dict(bw=10, delay='5ms', loss=1, max_queue_size=1000, use_htb=True)
+default_linkopts = dict(bw=50, delay='5ms', loss=1, max_queue_size=1000, use_htb=True)
 topos = { '2s3h': ( lambda: TwoThreeTopo() ),
           'datacenter': (lambda: DataCenter(default_linkopts, default_linkopts, default_linkopts, 3)) }
 
@@ -95,10 +106,10 @@ def testDataCenter():
 
 def testSimpleDC():
     setLogLevel('info')
-    linkopts = dict(bw=10, delay='5ms', loss=1, max_queue_size=1000, use_htb=True)
+    linkopts = dict(bw=3, delay='5ms', use_htb=True)
     netopts = dict(host=CPULimitedHost, link=TCLink)
     topo = SimpleDC(linkopts, linkopts, 2);
-    net = Mininet(topo = topo,host=CPULimitedHost,link=TCLink)
+    net = Mininet(topo = topo,host=CPULimitedHost,link=TCLink, controller = ControllerV1)
     sshdOpts = '-D -o UseDNS=no -u0'
     sshd(net, switch=net['c1'], opts=sshdOpts)
 

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import threading
 import threading
 import time
@@ -60,13 +62,14 @@ def socket_read_n(sock, n):
     return buf
 
 def err(listOfInput):
-    sys.stderr.write('DEBUG\n')
+    # sys.stderr.write('DEBUG\n')
     if type(listOfInput) is list or type(listOfInput) is tuple:
         for input in listOfInput:
             sys.stderr.write(str(input) + ' ')
     else:
         sys.stderr.write(str(listOfInput))
-    sys.stderr.write('\nDEBUG\n')
+    sys.stderr.write('\n')
+    # sys.stderr.write('\nDEBUG\n')
 
 class BarrierSync(object):
     def __init__(self):
@@ -83,3 +86,59 @@ class BarrierSync(object):
 
 def current_time_in_milli():
     return int(round(time.time() * 1000))
+
+
+# A quick & dirty implementation to have load differentiiation on servers
+
+class LoadDifferentiator(object):
+    def __init__(self):
+        # quick & dirty way
+        NUM_ITEMS_PER_HOST = 33722 / 4
+        self.num_host = int(config['NUM_HOST'])
+        self.buckets = dict()
+        self.max_buckets = dict()
+        for i in range(self.num_host):
+            self.buckets[i] = 0
+            self.max_buckets[i] = NUM_ITEMS_PER_HOST / (2**i)
+    # a duplicate of Store.bucket function
+    def storage_hash(self, key):
+        return hash(key) % self.num_host
+    def include_huh(self, item_id):
+        item_id_str = 'items:' + str(item_id)
+        server_id = self.storage_hash(item_id_str)
+        if(self.buckets[server_id] < self.max_buckets[server_id]):
+            self.buckets[server_id] += 1
+            return True
+        else:
+            return False
+
+    def assign_dscp(self, server_id):
+        """
+        4 return values           6, 16, 26, 36
+        correpsonding to queue    5, 3,  2,  1
+        """
+        if(server_id < self.num_host / 4.0):
+            return 6
+        if(server_id < self.num_host / 4.0 * 2):
+            return 16
+        if(server_id < self.num_host / 4.0 * 3 ):
+            return 26
+        else:
+            return 36
+    def dscp_to_queue_num(self, dscp):
+        return {
+            6: 5,
+            16: 3,
+            26: 2,
+            36: 1
+        }[dscp]
+
+
+# End of the quick & dirty implementation to have load differentiiation on servers
+
+
+if __name__ == '__main__':
+    ld = LoadDifferentiator()
+    print ld.max_buckets
+    print ld.assign_dscp(3)
+    print ld.dscp_to_queue_num(26)

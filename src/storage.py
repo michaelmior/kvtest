@@ -158,10 +158,10 @@ class Query(object):
 if __name__ == '__main__':
     # Read a couple entities, run some queries with known IDs
     # and print the distribution of data between buckets
-    n = 4
+    n = config['NUM_HOST']
     # topo = StarTopo(n)
     store0 = Store(n, 3, 1)
     users = User(store0).read()
     items = Item(store0).read()
-    print(store0.get('items:533721')[1]['seller'])
+    # print(store0.get('items:533721')[1]['seller'])
     print store0.stats()
