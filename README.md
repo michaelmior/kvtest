@@ -11,6 +11,7 @@ If necessary, this VM can be rebuilt by installing packer and running `packer bu
 # Configuration
 
 To turn on/off the network traffic scheduling, modify the following:
+
    vim /mininet/src/joinHelpers.py
    set config['TRAFFIC_SCHEDULING'] to True or False
 
@@ -28,7 +29,8 @@ You can start the server by invoking
 
     ./scripts/test.sh
 
-Once the server is started, you can invoke the client using the command below.
+Once the server is started and both it finished loading both user and item
+data, you can invoke the client using the command below.
 
     python client.py
 
