@@ -8,7 +8,7 @@ import json
 import struct
 
 config = {
-    'TRAFFIC_SCHEDULING' : False,
+    'TRAFFIC_SCHEDULING' : True,
 
     'SERVER_PORT' : 50007,
     'NUM_HOST': 4,  # Update when when change topology
@@ -116,29 +116,16 @@ class LoadDifferentiator(object):
 
     def assign_dscp(self, server_id):
         """
-        4 return values           6, 16, 26, 36
         correpsonding to queue    5, 3,  2,  1
         """
         if(server_id < self.num_host / 4.0):
-            return 6
+            return 8
         if(server_id < self.num_host / 4.0 * 2):
-            return 16
+            return 3
         if(server_id < self.num_host / 4.0 * 3 ):
-            return 26
+            return 2
         else:
-            return 36
-    def dscp_to_queue_num(self, dscp):
-        """
-        Converts dscp value to queue num
-        Default return value is queue # 6 which should be treated with highest priority
-        """
-        return {
-            6: 5,
-            16: 3,
-            26: 2,
-            36: 1
-        }.get(dscp, 6)
-
+            return 1
 
 # End of the quick & dirty implementation to have load differentiiation on servers
 

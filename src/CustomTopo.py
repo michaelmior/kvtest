@@ -69,6 +69,9 @@ class SimpleDC(Topo):
             for k in range(fanout):
                 host = self.addHost('h' + str(fanout * i + (k + 1)))
                 self.addLink(aggregationSwitch, host, **linkopts2)
+        host = self.addHost('z_client' + str(1))
+        self.addLink(coreSwitch, host)
+
 
 class TwoThreeTopo(Topo):
     """
