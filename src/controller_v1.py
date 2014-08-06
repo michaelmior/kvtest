@@ -30,7 +30,6 @@ import sys
 
 sys.path.append('/mininet/src/')
 from joinHelpers import err
-from joinHelpers import LoadDifferentiator
 
 log = core.getLogger()
 
@@ -85,7 +84,6 @@ class LearningSwitch (object):
     self.connection = connection
     self.transparent = transparent
 
-    self.ld = LoadDifferentiator()
     if(traffic_scheduling == 'True'):
       traffic_scheduling = True
     self.traffic_scheduling = traffic_scheduling
@@ -178,15 +176,16 @@ class LearningSwitch (object):
                   (packet.src, event.port, packet.dst, port))
         msg = of.ofp_flow_mod()
         msg.match = of.ofp_match.from_packet(packet, event.port)
-        msg.idle_timeout = 10
-        msg.hard_timeout = 30
+        # msg.idle_timeout = 10
+        # msg.hard_timeout = 30
         if self.traffic_scheduling:
           if(packet.type == 0x0800):
-            queue_num = self.ld.dscp_to_queue_num(packet.payload.tos >> 2)
+            # queue_num = self.ld.dscp_to_queue_num(packet.payload.tos >> 2)
+            queue_num = (packet.payload.tos >> 2)
             err((packet.payload.tos, queue_num, packet.payload))
             msg.actions.append(of.ofp_action_enqueue(port = port, queue_id = queue_num))
           else:
-            msg.actions.append(of.ofp_action_enqueue(port = port, queue_id = 6))
+            msg.actions.append(of.ofp_action_enqueue(port = port, queue_id = 0))
         else:
           msg.actions.append(of.ofp_action_enqueue(port = port, queue_id = 0))
         msg.data = event.ofp # 6a
