@@ -6,10 +6,11 @@ from mininet.link import TCLink
 from mininet.cli import CLI
 import os
 import sys
+import inspect
 from mininet.net import Controller
 
 # adds the current dir i.e. src to system path to include sshd
-sys.path.append(os.path.dirname(__file__))
+sys.path.append(os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda _: None))))
 from sshd import *
 from joinHelpers import config
 
@@ -91,8 +92,11 @@ class TwoThreeTopo(Topo):
         sshd
 
 default_linkopts = dict(bw=50, delay='5ms', loss=1, max_queue_size=1000, use_htb=True)
-topos = { '2s3h': ( lambda: TwoThreeTopo() ),
-          'datacenter': (lambda: DataCenter(default_linkopts, default_linkopts, default_linkopts, 3)) }
+topos = {
+  '2s3h': lambda: TwoThreeTopo(),
+  'datacenter': lambda: DataCenter(default_linkopts, default_linkopts, default_linkopts, 3),
+  'simple': lambda: SimpleDC({}, {}, 2),
+}
 
 def testDataCenter():
     setLogLevel('info')
