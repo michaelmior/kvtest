@@ -174,7 +174,7 @@ These works hint at the benefits of network aware data processing systems, but f
 CloudTPS~\cite{Wei2012} provides a join query processing layer on top of NoSQL stores which enforces ACID semantics for transactions.
 Our system does not currently consider transactional consistency, so this could be an interesting area to explore.
 R\"{o}diger et al.~\cite{Rodiger2014} examine the affects of data locality with respect to distributed query processing.
-Their Neo-Join algorithm is designed for efficient network usage by re-partitioning data and scheduling network transfers to avoid cross-traffic.
+Their Neo-Join algorithm is designed for efficient network usage by repartitioning data and scheduling network transfers to avoid cross-traffic.
 These techniques exert no control over the network, which may provide further opportunities for optimization.
 
 For example, Xiong et al.~\cite{Xiong2014} examine the usefulness of software-defined networking in supporting distributed analytical queries.
@@ -191,58 +191,40 @@ Our controller uses the POX~\cite{Gude2008} platform and OpenFlow~\cite{McKeown2
 Queries use data taken from the RUBiS~\cite{Cecchet2002} benchmark, which is a Web application simulating an online auction.
 We distribute data on users and the items they are selling between all nodes with no replication.
 
-Each experiment is performed by 5 independent runs and the results are used to
-compute the data in the following sections. The 95th percentile confidence
-interval is shown whenever appropriate.
+Each experiment is performed 5 times with the results are used to compute the data in the following sections.
+The 95th percentile confidence interval is shown where appropriate.
+
 \subsection{Micro Benchmark}
 \begin{figure}
     \centering
     \includegraphics[scale=2.5]{figures/Join_micro_benchmark.png}
     \caption{Micro benchmark setup}\label{fig:micro_benchmark}
 \end{figure}
-First, we want to demonstrate the proof-of-concept of our design by evaluating
-our system with the simple topology shown in figure
-\ref{fig:micro_benchmark}. We engineered the client query such that each server
-holds a different portion of the relevant data for the join operation,
-i.e. server 1 holds a quarter of the relevant \texttt{item} data and server 2,
-3, 4 holds 1/16, 1/32, 1/64 of the relevant \texttt{item} data
-respectively. The total relevant data sizes of \texttt{item} and \texttt{user}
-are about 9 MB and 2 MB respectively. In order to satisfy our assumption where
-the network is the bottleneck, we set the capacity of each link in the topology
-to 1Mbps.  The client is connected directly to the core switch with the same
-link capacity.
 
-In figure \ref{fig:micro_benchmark_total_time}, the red bars represent our
-system's baseline performance where the network traffic scheduling is turned
-off, i.e. without SDN. The average completion time without scheduling for each
-client query is over 180 seconds with a high variation. This kind of
-unpredictable performance is undesired in any datacenters. To provide
-predictable performance with our scheduling mechanism, we must first understand
-the characteristics of the costs for each sub query of the join operation. In
-our case it is easy to predict the costs because we assigned different portions
-of relevant data to each server, however, it is also easy in real deployment
-since the statistics of the server is usually available. Recall that by our
-design, server 1 is responsible to transmit the largest flows from and to other
-servers and the client.  Therefore, our scheduling must take this information
-into consideration and ensure that server 1 have the largest minimum bandwidth
-guarantee for this particular operation. Though we want server 1 to transfer
-its data as fast as possible, we do not want to starve other
-servers. Therefore, we must also have reasonable minimum bandwidth guarantees
-for other servers. Through experimentation, we find the most suitable minimum
-bandwidth guarantees on the 1 Mbps link for servers 2, 3, and 4 are 0.3 Mbps,
-0.2 Mbps and 0.1 Mbps respectively. We fixed these parameters and varied the
-minimum bandwidth guarantee for the server 1 to study the network
-behaviours. As shown by the yellow bars in figure
-\ref{fig:micro_benchmark_total_time}, there is noticeable performance gain when
-we increase the minimum bandwidth guarantee of server 1 from 0.5 Mbps to 0.8
-Mbps. It shows that it is important to favour the elephant flows during a join
-operation to minimize the overall completion time. We also want to highlight
-that we see diminished return as we increase the guarantee to 0.9 Mbps or even
-1.0 Mbps because this may significantly hurt other flows' completion time which
-result in slower execution overall. In the best case, with 0.8 minimum
-bandwidth guarantee for server 1, the average completion time of the client
-query is 154 seconds which gives us almost 15\% performance gain over the
-baseline implementation.
+First, we want to demonstrate the proof-of-concept of our design by evaluating our system with the simple topology shown in Figure~\ref{fig:micro_benchmark}.
+We engineered the client query such that each server holds a different portion of the relevant data for the join operation.
+That is, server 1 holds $1/4$ of the relevant item data and server 2, 3, and 4 hold $1/16$, $1/32$, $1/64$ of the relevant item data respectively.
+The total sizes of the item and user data are approximately 9 MB and 2 MB\@.
+In order to satisfy our assumption where the network is the bottleneck, we set the capacity of each link in the topology to 1 Mbps.
+The client is connected directly to the core switch with a link of the same capacity.
+
+In Figure~\ref{fig:micro_benchmark_total_time}, the red bars represent our system's baseline performance without our scheduling mechanism is turned off.
+The average completion time without scheduling for each client query is over 180 seconds and also shows significant variation.
+To provide predictable performance with our scheduling mechanism, we must first understand the characteristics of the costs for each component of the join operation.
+In our case it is easy to predict the costs because we assigned different portions of relevant data to each server.
+However, it is also easy in a real deployment scenario as the data distribution among servers is typically available or can be easily computed.
+Recall that by design, server 1 is responsible for transmitting the largest flows between other servers and the client. 
+Therefore, our scheduling must take this information into consideration and ensure that server 1 has the largest minimum bandwidth guarantee for this particular operation.
+
+Though we want server 1 to transfer its data as fast as possible, we do not want to starve other servers.
+Therefore, we must also have reasonable minimum bandwidth guarantees for other servers.
+Through experimentation, we found the most suitable minimum bandwidth guarantees on the 1 Mbps link for servers 2, 3, and 4 are 0.3 Mbps, 0.2 Mbps and 0.1 Mbps respectively.
+We fixed these parameters and varied the minimum bandwidth guarantee for server 1 to study the network behaviour.
+As shown by the right bars in Figure~\ref{fig:micro_benchmark_total_time}, there is a noticeable performance gain when we increase the minimum bandwidth guarantee of server 1 from 0.5 Mbps to 0.8 Mbps.
+This shows that it is important to favour larger flows during a join operation to minimize the overall completion time.
+We also want to highlight that we see diminishing returns as we further increase the guarantee.
+This is caused by a significant increase in the completion time for other flows, hurting the overall performance.
+In the best case, with 0.8 Mbps minimum bandwidth guarantee for server 1, the average completion time of the client query is 154 seconds which gives us almost 15\% performance gain over the baseline implementation.
 
 \begin{figure}
     \centering
@@ -250,30 +232,22 @@ baseline implementation.
     \caption{Query completion time}\label{fig:micro_benchmark_total_time}
 \end{figure}
 
-
-Next, we want to take a closer look at the performance results to understand
-why network scheduling helps. Figure \ref{fig:sub_query_completion_8} shows the
-sub query completion time for each server. The per server completion is
-calculated by the client after it fetched all the required data from each
-server. The white bars on the left is generated when the traffic scheduling is
-turned off. We see that server 1 takes the most time to complete and server 4
-takes the least time. This is expected due to the relevant data
-distribution. We can also see that if we turned on our network traffic
-scheduling mechanisms, the completion time for server 3 and server 4 slowed
-down quite a bit. This is because most of the bandwidth capacity will be
-allocated to help server 1 to finish its task as soon as possible to minimize
-final query completion time. The end result is of traffic scheduling is to
-average out the sub query completion time which in turn reduces the overall
-query execution time. We see that our experimental results match with our
-expectations.
+Next, we further examine the performance results to understand why network scheduling helps.
+Figure~\ref{fig:sub_query_completion_8} shows the subquery completion time for each server.
+The per-server completion is calculated by the client after it fetches all the required data from each server.
+The bars on the left are generated when traffic scheduling is disabled.
+We see that server 1 takes the most time to complete and server 4 takes the least time.
+This is expected due to the data distribution we defined above.
+We can also see that when we enabled our network traffic scheduling mechanisms, the completion time for server 3 and server 4 slowed down slightly.
+This is because most of the bandwidth will be allocated to help server 1 to finish its task as soon as possible.
+However, The end result is that traffic scheduling reduces the average subquery completion time, which in turn reduces the overall query execution time.
+We see that our experimental results match with our expectations.
 
 \begin{figure}
     \centering
     \includegraphics[scale=0.47]{figures/simple_topo_closer_8.png}
     \caption{Sub query completion time}\label{fig:sub_query_completion_8}
 \end{figure}
-
-
 
 \section{Future Work}
 
