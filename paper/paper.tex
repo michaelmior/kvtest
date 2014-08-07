@@ -57,7 +57,7 @@ We demonstrate an approach based on software-defined networking (SDN) that takes
 
 \section{Introduction}
 
-Recent trends have shown a proliferation of databases termed ``NoSQL'' which frequently eschew traditional database concepts such as referential integrity and ACID transactions for the sake of performance.
+Recent trends have shown a proliferation of databases termed ``NoSQL'' which frequently eschew traditional database concepts such as referential integrity, ACID transactions, and high-level query languages for the sake of performance.
 However, applications using these databases still have a need to perform complex queries.
 Especially in the case of analytical queries, this may force the application designer to implement constructs such as joins at the application level.
 This requires a significant amount of data transfer between nodes.
@@ -267,8 +267,15 @@ Our current system also does not deal with the possibility of updates or replica
 There is potential to further exploit SDN techniques by allowing low latency updates to data in the presence of the high bandwidth flows used for query processing.
 Replication provides further opportunity for optimization as flows can be routed to multiple possible locations to avoid bottleneck links.
 
-
 \section{Conclusion}
+
+In this work, we examined opportunties to apply software-defined network techniques to provide more efficient query processing over NoSQL databases.
+We demonstrated a simple technique using smart network scheduling to improve the performance of distributed joins.
+Our technique provides a significant performance improvement over uninformed switching techniques.
+
+We also presented several opportunties to further exploit of software-defined network techniques to improve query processing.
+As software-defined networking becomes increasingly common in datacentres, we feel similar techniques will become increasingly prevalent.
+Little work has been done to exploit software-defined networking in the context of NoSQL databases and distributed data management.
 
 \let\theOLDbibliography\thebibliography\renewcommand{\thebibliography}[1]{\theOLDbibliography{#1}%
 \item[]\vspace*{0.5mm}}
