@@ -83,7 +83,7 @@ With the advent of software-define networking (SDN), it is possible for a smart 
 Furthermore, the controller can dynamically adapt the network to improve query processing efficiency.
 
 As we discuss later, some existing query processing engines take into account network topology and link utilization when scheduling distributed queries.
-However, there is relatively little work expoloiting dynamic reconfiguration of the network to support query processing.
+However, there is relatively little work exploiting dynamic reconfiguration of the network to support query processing.
 A centralized network controller which is aware of the dynamics of query processing is able to make smart routing decisions to optimize performance.
 For example, flows for queries which are latency sensitive can be given priority over highly utilized links, while other flows can be routed to longer paths with lower utilization.
 This can be done dynamically based on the state of the network.
@@ -115,7 +115,7 @@ The execution model for these queries is very straightforward.
 We consider the execution of the simple query given above.
 We start by passing the query to each node which has entities of the class on the left side of the join (\texttt{Item}).
 Those nodes will scan their local list of entities and apply the necessary filters (\texttt{price > 20}).
-Each node then forwards the necessary foreign keys to nodes holding entites of the class on the right side of the join (\texttt{User}).
+Each node then forwards the necessary foreign keys to nodes holding entities of the class on the right side of the join (\texttt{User}).
 These nodes are then able to look up entities on the other side of the join and results can be passed back to the client.
 
 \subsection{Architecture}
@@ -136,7 +136,7 @@ Instead, we mitigate the effect of stragglers by adjusting the bandwidth allocat
 
 \subsection{Flow Scheduling}
 
-Simple approaches to bandwith allocation such as max-min fairness pose significant problems in our settings.
+Simple approaches to bandwidth allocation such as max-min fairness pose significant problems in our settings.
 If we were to use fair share allocation, then the node with the largest share of the query results, bottlenecked by available bandwidth, would become a straggler.
 Nodes with a small share of query results could finish much more quickly only to wait for these stragglers.
 To minimize the overall completion time of queries, we can allocate bandwidth to each node as the fraction of query results which will be returned by the node.
@@ -174,11 +174,11 @@ These works hint at the benefits of network aware data processing systems, but f
 CloudTPS~\cite{Wei2012} provides a join query processing layer on top of NoSQL stores which enforces ACID semantics for transactions.
 Our system does not currently consider transactional consistency, so this could be an interesting area to explore.
 R\"{o}diger et al.~\cite{Rodiger2014} examine the affects of data locality with respect to distributed query processing.
-Their Neo-Join algorithm is designed for efficient network usage by repartitioning data and scheduling network transfers to avoid cross-traffic.
+Their Neo-Join algorithm is designed for efficient network usage by re-partitioning data and scheduling network transfers to avoid cross-traffic.
 These techniques exert no control over the network, which may provide further opportunities for optimization.
 
 For example, Xiong et al.~\cite{Xiong2014} examine the usefulness of software-defined networking in supporting distributed analytical queries.
-Their workload consits of read-only SQL queries where query processing is bandwidth-intensive.
+Their workload consists of read-only SQL queries where query processing is bandwidth-intensive.
 They construct a global query optimizer which decides on join order and how query results should be passed between sites.
 This work takes a similar approach to ours, but also identifies many opportunities for further work.
 
@@ -191,10 +191,94 @@ Our controller uses the POX~\cite{Gude2008} platform and OpenFlow~\cite{McKeown2
 Queries use data taken from the RUBiS~\cite{Cecchet2002} benchmark, which is a Web application simulating an online auction.
 We distribute data on users and the items they are selling between all nodes with no replication.
 
+Each experiment is performed by 5 independent runs and the results are used to
+compute the data in the following sections. The 95th percentile confidence
+interval is shown whenever appropriate.
+\subsection{Micro Benchmark}
+\begin{figure}
+    \centering
+    \includegraphics[scale=2.5]{figures/Join_micro_benchmark.png}
+    \caption{Micro benchmark setup}\label{fig:micro_benchmark}
+\end{figure}
+First, we want to demonstrate the proof-of-concept of our design by evaluating
+our system with the simple topology shown in figure
+\ref{fig:micro_benchmark}. We engineered the client query such that each server
+holds a different portion of the relevant data for the join operation,
+i.e. server 1 holds a quarter of the relevant \texttt{item} data and server 2,
+3, 4 holds 1/16, 1/32, 1/64 of the relevant \texttt{item} data
+respectively. The total relevant data sizes of \texttt{item} and \texttt{user}
+are about 9 MB and 2 MB respectively. In order to satisfy our assumption where
+the network is the bottleneck, we set the capacity of each link in the topology
+to 1Mbps.  The client is connected directly to the core switch with the same
+link capacity.
+
+In figure \ref{fig:micro_benchmark_total_time}, the red bars represent our
+system's baseline performance where the network traffic scheduling is turned
+off, i.e. without SDN. The average completion time without scheduling for each
+client query is over 180 seconds with a high variation. This kind of
+unpredictable performance is undesired in any datacenters. To provide
+predictable performance with our scheduling mechanism, we must first understand
+the characteristics of the costs for each sub query of the join operation. In
+our case it is easy to predict the costs because we assigned different portions
+of relevant data to each server, however, it is also easy in real deployment
+since the statistics of the server is usually available. Recall that by our
+design, server 1 is responsible to transmit the largest flows from and to other
+servers and the client.  Therefore, our scheduling must take this information
+into consideration and ensure that server 1 have the largest minimum bandwidth
+guarantee for this particular operation. Though we want server 1 to transfer
+its data as fast as possible, we do not want to starve other
+servers. Therefore, we must also have reasonable minimum bandwidth guarantees
+for other servers. Through experimentation, we find the most suitable minimum
+bandwidth guarantees on the 1 Mbps link for servers 2, 3, and 4 are 0.3 Mbps,
+0.2 Mbps and 0.1 Mbps respectively. We fixed these parameters and varied the
+minimum bandwidth guarantee for the server 1 to study the network
+behaviours. As shown by the yellow bars in figure
+\ref{fig:micro_benchmark_total_time}, there is noticeable performance gain when
+we increase the minimum bandwidth guarantee of server 1 from 0.5 Mbps to 0.8
+Mbps. It shows that it is important to favour the elephant flows during a join
+operation to minimize the overall completion time. We also want to highlight
+that we see diminished return as we increase the guarantee to 0.9 Mbps or even
+1.0 Mbps because this may significantly hurt other flows' completion time which
+result in slower execution overall. In the best case, with 0.8 minimum
+bandwidth guarantee for server 1, the average completion time of the client
+query is 154 seconds which gives us almost 15\% performance gain over the
+baseline implementation.
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.47]{figures/simple_topo_overall.png}
+    \caption{Query completion time}\label{fig:micro_benchmark_total_time}
+\end{figure}
+
+
+Next, we want to take a closer look at the performance results to understand
+why network scheduling helps. Figure \ref{fig:sub_query_completion_8} shows the
+sub query completion time for each server. The per server completion is
+calculated by the client after it fetched all the required data from each
+server. The white bars on the left is generated when the traffic scheduling is
+turned off. We see that server 1 takes the most time to complete and server 4
+takes the least time. This is expected due to the relevant data
+distribution. We can also see that if we turned on our network traffic
+scheduling mechanisms, the completion time for server 3 and server 4 slowed
+down quite a bit. This is because most of the bandwidth capacity will be
+allocated to help server 1 to finish its task as soon as possible to minimize
+final query completion time. The end result is of traffic scheduling is to
+average out the sub query completion time which in turn reduces the overall
+query execution time. We see that our experimental results match with our
+expectations.
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.47]{figures/simple_topo_closer_8.png}
+    \caption{Sub query completion time}\label{fig:sub_query_completion_8}
+\end{figure}
+
+
+
 \section{Future Work}
 
 There are many opportunities to combine this work with appropriate key placement strategies for further performance optimizations.
-For heterogenous networks, a key placement strategy which is network and workload aware may provide significant performance advantages.
+For heterogeneous networks, a key placement strategy which is network and workload aware may provide significant performance advantages.
 Our current query execution model is very simplistic and could be expanded to support richer queries and distributed index data structures.
 We would also like to investigate other query types such as aggregation which we suspect would also benefit from our approach.
 This presents new challenges in network scheduling, especially in the face of concurrent queries of multiple different types.
@@ -202,6 +286,7 @@ This presents new challenges in network scheduling, especially in the face of co
 Our current system also does not deal with the possibility of updates or replication.
 There is potential to further exploit SDN techniques by allowing low latency updates to data in the presence of the high bandwidth flows used for query processing.
 Replication provides further opportunity for optimization as flows can be routed to multiple possible locations to avoid bottleneck links.
+
 
 \section{Conclusion}
 
