@@ -251,6 +251,12 @@ We see that our experimental results match with our expectations.
 
 \section{Future Work}
 
+While our results are promising, we would like to take a more principled approach to determine the theoretical gains possible for applying this technique in order to clearly identify potential bottlenecks.
+We are also interested in performing a more thorough evaluation on a larger scale with more realistic conditions.
+We feel that there is potential to significantly improve the performance of our current approach.
+For example, we currently buffer all results at each server before sending a reply.
+Streaming results back to the client as they are received may result in higher link utilization and increased efficiency.
+
 There are many opportunities to combine this work with appropriate key placement strategies for further performance optimizations.
 For heterogeneous networks, a key placement strategy which is network and workload aware may provide significant performance advantages.
 Our current query execution model is very simplistic and could be expanded to support richer queries and distributed index data structures.
