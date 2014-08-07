@@ -88,7 +88,12 @@ A centralized network controller which is aware of the dynamics of query process
 For example, flows for queries which are latency sensitive can be given priority over highly utilized links, while other flows can be routed to longer paths with lower utilization.
 This can be done dynamically based on the state of the network.
 Furthermore, the routing can be done using hardware switches as opposed to intelligent software routers, which minimizes latency and improves scalability.
+
 In this work, we examine one possible application of SDN for improving the throughput of distributed join queries.
+Specifically, we aim to schedule network traffic between servers processing distributed joins to optimize query completion time.
+As identified above, improved scheduling can result in increased query performance.
+We contribute a simple but effective method of flow scheduling in this use case.
+We also identify several ways our work can be complemented with other techniques and extended to support alternative query models.
 
 \section{System Overview}
 
