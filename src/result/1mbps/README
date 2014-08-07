@@ -1,0 +1,6 @@
+The default miminum bandwidth guarantee for
+h4 == 0.1mbps
+h3 == 0.2mbps
+h2 == 0.3mbps
+
+For h1, it varies.
