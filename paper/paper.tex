@@ -11,6 +11,7 @@
 \usepackage{enumitem}
 \usepackage[english]{babel}
 \usepackage{microtype}
+\usepackage{listings}
 
 \clubpenalty=10000
 \widowpenalty=10000
@@ -149,6 +150,23 @@ A node can signal the expected fraction of the results for a query it will retur
 When a new flow is issued for query processing, the controller can inspect these bits and assign an appropriate priority to each flow.
 The controller is similar to a simple L2 learning switch.
 However, we configure several queues for each switch port which allow us to provide bandwidth reservations to support variation in expected traffic volume.
+Once we have learned the port mapping, we simply install a rule that also matches on the DSCP bits and assigns the packet to an appropriate queue as in Figure~\ref{fig:scheduling}, which shows some sample code from our controller.
+
+\begin{figure*}
+    \begin{lstlisting}[language=Python]
+        # Only perform queue assignment for IP packets
+        if(packet.type == 0x0800):
+          # Extract the DSCP bits from the ToS (ignoring ECN)
+          queue_num = (packet.payload.tos >> 2)
+
+          # Send the packet to the appropriate queue
+          msg.actions.append(of.ofp_action_enqueue(port=port, queue_id=queue_num))
+        else:
+          # Send all non-IP packets to a queue with higher priority
+          msg.actions.append(of.ofp_action_enqueue(port=port, queue_id=0))
+    \end{lstlisting}
+    \caption{Simple flow scheduling to queues}\label{fig:scheduling}
+\end{figure*}
 
 We also change the flow table rules we install to match on the type of service (ToS) bits in the IP header.
 Two of these eight bits are often used for explicit congestion notification (ECN).
@@ -199,7 +217,9 @@ work in this domain.
 
 We run all our experiments on a simulated network on a single machine using Mininet~\cite{Lantz2010}.
 We use Open vSwitch~\cite{Pfaff2009} as our switch which supports queues with varying bandwidth guarantees.
-Our controller uses the POX~\cite{Gude2008} platform and OpenFlow~\cite{McKeown2008} 1.0.
+Queuing is performed by the hierarchical token bucket queuing discipline in the Linux kernel.
+We simply specify a set of queues for each switch port with varying minimum bandwidth guarantees.
+Our controller is written in Python using the POX~\cite{Gude2008} platform and OpenFlow~\cite{McKeown2008} 1.0.
 
 Queries use data taken from the RUBiS~\cite{Cecchet2002} benchmark, which is a Web application simulating an online auction.
 We distribute data on users and the items they are selling between all nodes with no replication.
