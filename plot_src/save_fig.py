@@ -6,7 +6,7 @@
 import os
 import sys
 
-def save(user_plt, path, ext='png', close=True, verbose=True):
+def save(user_plt, path, ext='pdf', close=True, verbose=True):
     """Save a figure from pyplot.
 
     Parameters

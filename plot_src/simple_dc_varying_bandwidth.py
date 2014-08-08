@@ -20,7 +20,7 @@ def get_overall_arr(key_word, data_dir):
     return rtn
 
 PATTERN = [ "/" , "\\" ,"o", "*", "O", "x", ".", '-', "|" , "+"]
-base_dir = '/mininet/src/result/various_link_bandwidth/'
+base_dir = '/home/mmior/apps/kvtest/src/result/various_link_bandwidth/'
 data_dirs = [base_dir + '0_8mbps/',
              base_dir + '0_9mbps/',
              base_dir + '1_0mbps/',
@@ -46,7 +46,7 @@ get_results('Total time')
 comp_mean = []
 comp_err = []
 
-base_dir = '/mininet/src/result/various_link_bandwidth_scheduling/'
+base_dir = '/home/mmior/apps/kvtest/src/result/various_link_bandwidth_scheduling/'
 data_dirs = [base_dir + '0_8mbps/',
              base_dir + '0_9mbps/',
              base_dir + '1_0mbps/',
@@ -90,7 +90,7 @@ plt.ylabel('Query completion time in seconds')
 plt.xlabel('Link capacity in Mbps')
 plt.xticks((0,1,2,3,4), ('0.8', '0.9', '1.0', '1.1', '1.2') )
 plt.legend(loc='upper right')
-# plt.legend([base, comp_line], ['Without Scheduling', 'With Scheduling'])
+# plt.legend([base, comp_line], ['Without scheduling', 'With scheduling'])
 
 # plt.yticks(np.arange(0,46,5))
 # plt.legend((p0[0], p1[0]),

@@ -20,7 +20,7 @@ def get_overall_arr(key_word, data_dir):
     return rtn
 
 PATTERN = [ "/" , "\\" ,"o", "*", "O", "x", ".", '-', "|" , "+"]
-base_dir = '/mininet/src/result/1mbps/'
+base_dir = '/home/mmior/apps/kvtest/src/result/1mbps/'
 data_dirs = [base_dir + 'norm/',
              base_dir + 'scheduling_queue_5_for_h1/',
              base_dir + 'scheduling_queue_6_for_h1/',
@@ -85,8 +85,8 @@ plt.xlabel('Minimum bandwidth guarantee for the largest flow in Mbps')
 plt.xticks(ind+width, ('0.5', '0.6', '0.7', '0.8', '0.9', '1.0') )
 # plt.yticks(np.arange(0,46,5))
 plt.legend((p0[0], p1[0]),
-           ('Without Scheduling',
-            'With Scheduling'))
+           ('Without scheduling',
+            'With scheduling'))
            # loc = 'upper left', prop={'size':12},
            # ncol is # of columns for the legend
            # ncol=2)

@@ -7,7 +7,10 @@ targets = paper
 
 built_figtargets =  
 
-base_figtargets = figures/rubis-er.pdf figures/sample-topology.pdf
+base_figtargets = figures/rubis-er.pdf figures/sample-topology.pdf \
+				  figures/simple_topo_closer_8.pdf \
+				  figures/simple_topo_overall.pdf \
+				  figures/simple_topo_varying_bd.pdf
 
 all: ${targets:%=%.pdf}
 
