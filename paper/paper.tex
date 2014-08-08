@@ -256,6 +256,8 @@ We also want to highlight that we see diminishing returns as we further increase
 This is caused by a significant increase in the completion time for other flows, hurting the overall performance.
 In the best case, with 0.8 Mbps minimum bandwidth guarantee for server 1, the average completion time of the client query is 154 seconds which gives us almost 15\% performance gain over the baseline implementation.
 
+
+
 \begin{figure}
     \centering
     \includegraphics[scale=0.47]{figures/simple_topo_overall.png}
@@ -279,6 +281,17 @@ We see that our experimental results match with our expectations.
     \caption{Sub query completion time}\label{fig:sub_query_completion_8}
 \end{figure}
 
+
+To understand how link capacity affects the perform. We also tested our micro benchmark by varying the link capacity. The result is shown in figure~\ref{fig:varying_bd}. During each of the experiment, the system parameters, e.g. the minimum bandwidth guarantee for each server (server 1 will always have min-guarantee off 80\% of the total link capacity), are fixed and we only varied the link capacity. We see that our system can adaptively work with different link capacities and our system is uniformly performing better than the baseline system without scheduling. The next promising step is to increase link capacity at larger steps and study how system will react and try to learn if we need to adjust system adaptivity to the link capacity.
+
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.47]{figures/simple_topo_varying_bd.png}
+    \caption{Query completion time with varying link capacity}\label{fig:varying_bd}
+\end{figure}
+
+
 \section{Future Work}
 
 While our results are promising, we would like to take a more principled approach to determine the theoretical gains possible for applying this
@@ -293,7 +306,7 @@ Streaming results back to the client as they are received may result in higher l
 There are many opportunities to combine this work with appropriate key placement strategies for further performance optimizations.
 A key placement strategy which is network and workload aware may provide significant performance advantages.
 On the flip side of the data placement problem is the problem of data shipping, where we can exploit our system's network awareness to decide where data should be shipped to execute joins most efficiently.
-Futhermore, our current query execution model is very simplistic and could be expanded to support richer queries and distributed index data structures.
+Furthermore, our current query execution model is very simplistic and could be expanded to support richer queries and distributed index data structures.
 We would also like to investigate other query types such as aggregation which we suspect would also benefit from our approach.
 This presents new challenges in network scheduling, especially in the face of concurrent queries of multiple different types.
 
