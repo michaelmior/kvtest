@@ -205,13 +205,10 @@ Their workload consists of read-only SQL queries where query processing is bandw
 They construct a global query optimizer which decides on join order and how query results should be passed between sites.
 This work takes a similar approach to ours, but also identifies many opportunities for further work.
 
-There are other advanced join operations which may benefit from software-defined
-networking. Ntarmos et al.~\cite{Ntarmos2014} uses novel indexing techniques to
-improve the performance of top-k joins for NoSQL databases which in turn
-reduces both network latency and network traffics. This work did not explicit
-use software-defined networking, however the amount of network traffic is one
-important metric in their evaluation which hints possible network related
-work in this domain.
+There are other advanced join operations which may benefit from software-defined networking.
+Ntarmos et al.~\cite{Ntarmos2014} uses novel indexing techniques to improve the performance of top-k joins for NoSQL databases which in turn reduces both network latency and traffic.
+This work did not explicitly use software-defined networking.
+However, the amount of network traffic is a key metric in their evaluation, hinting at the possibility to successfully apply SDN techniques.
 
 \section{Evaluation}
 
@@ -284,66 +281,39 @@ We see that our experimental results match with our expectations.
 
 \section{Future Work}
 
-While our results are promising, we would like to take a more principled
-approach to determine the theoretical gains possible for applying this
-technique in order to clearly identify potential bottlenecks.  For example, we
-have implemented a more realistic datacenter like topology with potentially
-large number of servers. However, we find that our system requires a lot fine
-tuning of minimum bandwidth guarantees for more complex systems. Theoretical
-understanding of our system and approach could potentially enable us to
-automate this fine-tuning process, which in turn allows us to perform a more
-thorough evaluation on a larger scale with more realistic conditions. We feel
-that there is potential to significantly improve the performance of our current
-approach.  For example, we currently buffer all results at each server before
-sending a reply.  Streaming results back to the client as they are received may
-result in higher link utilization and increased efficiency.
+While our results are promising, we would like to take a more principled approach to determine the theoretical gains possible for applying this
+technique in order to clearly identify potential bottlenecks.
+For example, we have implemented a more realistic datacenter like topology with potentially large number of servers.
+However, we found that our system requires a lot of fine tuning for more complex topologies.
+A more thorough theoretical understanding of our system and approach could potentially enable us to automate this process, which in turn would allows us a more thorough evaluation on a larger scale with more realistic conditions.
+We feel that there is potential to significantly improve the performance of our current approach in several ways.
+For example, we currently buffer all results at each server before sending a reply.
+Streaming results back to the client as they are received may result in higher link utilization and increased efficiency.
 
-There are many opportunities to combine this work with appropriate key
-placement strategies for further performance optimizations.  For heterogeneous
-networks, a key placement strategy which is network and workload aware may
-provide significant performance advantages. On the flip side of data placement
-problem is the data shipment problem where we can exploit our system's network
-awareness to decide which node the data should be shipped to in order to
-perform efficient join operation. Our current query execution model is very
-simplistic and could be expanded to support richer queries and distributed
-index data structures.  We would also like to investigate other query types
-such as aggregation which we suspect would also benefit from our approach.
-This presents new challenges in network scheduling, especially in the face of
-concurrent queries of multiple different types.
+There are many opportunities to combine this work with appropriate key placement strategies for further performance optimizations.
+A key placement strategy which is network and workload aware may provide significant performance advantages.
+On the flip side of the data placement problem is the problem of data shipping, where we can exploit our system's network awareness to decide where data should be shipped to execute joins most efficiently.
+Futhermore, our current query execution model is very simplistic and could be expanded to support richer queries and distributed index data structures.
+We would also like to investigate other query types such as aggregation which we suspect would also benefit from our approach.
+This presents new challenges in network scheduling, especially in the face of concurrent queries of multiple different types.
 
-Another promising direction is to consider the other kinds of network
-topologies, such as fat tree topologies, where there exists multiple path
-between any two hosts in the network. This enables our controller to use a
-combination of network aware routing and minimum bandwidth guarantee techniques
-to improve the overall performance of each query. We foresee that we will
-evaluate our network-aware system against regular routing protocols such as
-Open Shortest Path First routing to study the networking behaviours..
+Another promising direction is to consider the other network topologies, such as fat trees, where there exist multiple paths between any two hosts.
+This provide opportunities to use a combination of network aware routing and minimum bandwidth guarantees to improve the overall performance of each query.
+We foresee that we will evaluate our network-aware system against regular routing protocols such as Open Shortest Path First (OSPF).
 
-Our current system also does not deal with the possibility of updates or
-replication.  There is potential to further exploit SDN techniques by allowing
-low latency updates to data in the presence of the high bandwidth flows used
-for query processing.  Replication provides further opportunity for
-optimization as flows can be routed to multiple possible locations to avoid
-bottleneck links or hosts.
-
-We need to thoroughly study each of the aforementioned techniques to fully
-understand their pros and cons in order to integrate all of them as a whole to
-provide the optimal join operation for distributed NoSQL databases.
+Our current system also does not deal with the possibility of updates or replication.
+There is potential to further exploit SDN techniques by allowing low latency updates to data in the presence of the high bandwidth flows used
+for query processing.
+Replication also provides further opportunities for optimization as flows can be routed to multiple possible locations to avoid bottleneck links or hosts.
 
 \section{Conclusion}
 
-In this work, we examined opportunities to apply software-defined network
-techniques to provide more efficient query processing over NoSQL databases.  We
-demonstrated a simple technique using smart network scheduling to improve the
-performance of distributed joins.  Our preliminary technique provides a
-significant performance improvement over uninformed switching techniques.
+In this work, we examined opportunities to apply software-defined network techniques to provide more efficient query processing over NoSQL databases.
+We demonstrated a simple technique using smart network scheduling to improve the performance of distributed joins.
+Our preliminary technique provides a significant performance improvement over uninformed switching techniques.
 
-We also presented several opportunities to further exploit of software-defined
-network techniques to improve query processing.  As software-defined networking
-becomes increasingly common in datacenters, we feel similar techniques will
-become increasingly prevalent.  Little work has been done to exploit
-software-defined networking in the context of NoSQL databases and distributed
-data management.
+We also presented several opportunities to further exploit of software-defined network techniques to improve query processing.
+As software-defined networking becomes increasingly common in datacenters, we feel similar techniques will become increasingly prevalent.  Little work has been done to exploit software-defined networking in the context of NoSQL databases and distributed data management.
 
 \let\theOLDbibliography\thebibliography\renewcommand{\thebibliography}[1]{\theOLDbibliography{#1}%
 \item[]\vspace*{0.5mm}}
