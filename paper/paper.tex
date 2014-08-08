@@ -171,6 +171,7 @@ Once we have learned the port mapping, we simply install a rule that also matche
 We also change the flow table rules we install to match on the type of service (ToS) bits in the IP header.
 Two of these eight bits are often used for explicit congestion notification (ECN).
 We avoid these bits to allow ECN to operate uninhibited.
+Our system do not currently make use of ECN, but this could be worth exploring in the future.
 The remaining six bits are the differentiated services code point (DSCP) which are used to provide varying QoS guarantees for different flows.
 We assume that the portion of the network our system is operating on is not carrying other traffic so we are free to set these bits as we choose.
 To interconnect with other networks which may assign different meaning to these bits, we can simply zero these bits for any traffic passing through ingress/egress switches.
@@ -256,8 +257,6 @@ We also want to highlight that we see diminishing returns as we further increase
 This is caused by a significant increase in the completion time for other flows, hurting the overall performance.
 In the best case, with 0.8 Mbps minimum bandwidth guarantee for server 1, the average completion time of the client query is 154 seconds which gives us almost 15\% performance gain over the baseline implementation.
 
-
-
 \begin{figure}
     \centering
     \includegraphics[scale=0.47]{figures/simple_topo_overall.png}
@@ -270,9 +269,9 @@ The per-server completion is calculated by the client after it fetches all the r
 The bars on the left are generated when traffic scheduling is disabled.
 We see that server 1 takes the most time to complete and server 4 takes the least time.
 This is expected due to the data distribution we defined above.
-We can also see that when we enabled our network traffic scheduling mechanisms, the completion time for server 3 and server 4 slowed down slightly.
-This is because most of the bandwidth will be allocated to help server 1 to finish its task as soon as possible.
-However, The end result is that traffic scheduling reduces the average subquery completion time, which in turn reduces the overall query execution time.
+We can also see that when we enabled our network traffic scheduling mechanisms, the completion time for servers 3 and 4 increased slightly.
+This is because most of the bandwidth is allocated to help server 1 to finish its task as soon as possible.
+However, the end result is that traffic scheduling reduces the average subquery completion time, which in turn reduces the overall query execution time.
 We see that our experimental results match with our expectations.
 
 \begin{figure}
@@ -281,22 +280,22 @@ We see that our experimental results match with our expectations.
     \caption{Sub query completion time}\label{fig:sub_query_completion_8}
 \end{figure}
 
-
-To understand how link capacity affects the perform. We also tested our micro benchmark by varying the link capacity. The result is shown in figure~\ref{fig:varying_bd}. During each of the experiment, the system parameters, e.g. the minimum bandwidth guarantee for each server (server 1 will always have min-guarantee off 80\% of the total link capacity), are fixed and we only varied the link capacity. We see that our system can adaptively work with different link capacities and our system is uniformly performing better than the baseline system without scheduling. The next promising step is to increase link capacity at larger steps and study how system will react and try to learn if we need to adjust system adaptivity to the link capacity.
-
+To understand how link capacity affects the perform.
+We also tested our micro benchmark by varying the link capacity.
+The result is shown in Figure~\ref{fig:varying_bd}.
+During each of the experiments, the system parameters, e.g.\ the minimum bandwidth guarantees for each server, are fixed while varying the total capacity of each link.
+We see that our system can adaptively work with different link capacities and our system consistently outperforms the baseline with no traffic scheduling.
 
 \begin{figure}
-    \centering
     \includegraphics[scale=0.47]{figures/simple_topo_varying_bd.png}
     \caption{Query completion time with varying link capacity}\label{fig:varying_bd}
 \end{figure}
-
 
 \section{Future Work}
 
 While our results are promising, we would like to take a more principled approach to determine the theoretical gains possible for applying this
 technique in order to clearly identify potential bottlenecks.
-For example, we have implemented a more realistic datacenter like topology with potentially large number of servers.
+For example, we have implemented a more realistic data centre like topology with potentially large number of servers.
 However, we found that our system requires a lot of fine tuning for more complex topologies.
 A more thorough theoretical understanding of our system and approach could potentially enable us to automate this process, which in turn would allows us a more thorough evaluation on a larger scale with more realistic conditions.
 We feel that there is potential to significantly improve the performance of our current approach in several ways.
@@ -326,7 +325,7 @@ We demonstrated a simple technique using smart network scheduling to improve the
 Our preliminary technique provides a significant performance improvement over uninformed switching techniques.
 
 We also presented several opportunities to further exploit of software-defined network techniques to improve query processing.
-As software-defined networking becomes increasingly common in datacenters, we feel similar techniques will become increasingly prevalent.  Little work has been done to exploit software-defined networking in the context of NoSQL databases and distributed data management.
+As software-defined networking becomes increasingly common in data centres, we feel similar techniques will become increasingly prevalent.  Little work has been done to exploit software-defined networking in the context of NoSQL databases and distributed data management.
 
 \bibliographystyle{abbrv}
 \bibliography{paper}
