@@ -165,6 +165,11 @@ Their approach aims to minimize communication cost, but it is designed for P2P s
 PIER~\cite{Huebsch2005} is a similar query processing engine over DHTs which is also not network-aware.
 However, the query processing model used by PIER may be an interesting area to explore.
 
+The traditional approach to optimizing network usage in distributed query processing is to apply smart key placement strategies to minimize the number of distributed transactions, and also the amount of data which must be transferred between nodes.
+For example, Schism~\cite{Curino2010} uses graph partitioning techniques to reduce the cost of distributed transactions by up to 30\%.
+Vila\c{c}a et al.~\cite{Vilaca2011} specifically target key-value stores and aim to improve locality in a multidimensional space of tags (such as foreign keys) applied to data items.
+We expect partitioning techniques such as these to be complementary to our work.
+
 There has also been some work in exploiting software-defined networking for big data applications.
 Wang et al.~\cite{Wang2012} examined network traffic patterns in a Hadoop~\cite{Shvachko2010} cluster and identified opportunities to combine network-aware job scheduling with dynamic routing configuration to improve job completion time.
 SmartJoin~\cite{Slagter2014} also examines network traffic patterns in Hadoop, specifically for join queries executed as MapReduce jobs.
