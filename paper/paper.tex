@@ -128,9 +128,9 @@ When a query is received from a client, the server looks up entities on the left
 When a server receives a request from another server, it looks up the necessary entities to be joined locally and sends the reply back to the requesting server.
 Once the server processing a client request receives responses from the other servers on the network, it can send a final response back to the client.
 
-This results in the issue of stragglers we presented previously.
+This results in the issue of stragglers which we presented previously.
 Note that the common technique of issuing a request multiple times to avoid stragglers is not helpful in our scenario.
-As previously stated, our performance is bottlenecked by the available bandwidth.
+As previously stated, the performance of our system is bottlenecked by the available bandwidth.
 Stragglers exist in our system because of a lack of available bandwidth as opposed to variations in node performance (which is what multiple issuance is designed to mitigate).
 Furthermore, multiple issuance would place even stronger bandwidth pressure on our network, causing additional performance issues.
 Instead, we mitigate the effect of stragglers by adjusting the bandwidth allocation for each flow.
@@ -232,7 +232,7 @@ The 95th percentile confidence interval is shown where appropriate.
     \caption{Micro benchmark setup}\label{fig:micro_benchmark}
 \end{figure}
 
-First, we want to demonstrate the proof-of-concept of our design by evaluating our system with the simple topology shown in Figure~\ref{fig:micro_benchmark}.
+First, we demonstrate a simple proof-of-concept of our design by evaluating our system with the simple topology shown in Figure~\ref{fig:micro_benchmark}.
 We engineered the client query such that each server holds a different portion of the relevant data for the join operation.
 That is, server 1 holds $1/4$ of the relevant item data and server 2, 3, and 4 hold $1/16$, $1/32$, $1/64$ of the relevant item data respectively.
 The total sizes of the item and user data are approximately 9 MB and 2 MB\@.
@@ -241,21 +241,21 @@ The client is connected directly to the core switch with a link of the same capa
 
 In Figure~\ref{fig:micro_benchmark_total_time}, the red bars represent our system's baseline performance without our scheduling mechanism is turned off.
 The average completion time without scheduling for each client query is over 180 seconds and also shows significant variation.
-To provide predictable performance with our scheduling mechanism, we must first understand the characteristics of the costs for each component of the join operation.
-In our case it is easy to predict the costs because we assigned different portions of relevant data to each server.
-However, it is also easy in a real deployment scenario as the data distribution among servers is typically available or can be easily computed.
+To provide predictable performance with our scheduling mechanism, we must first understand the costs for each component of the join operation.
+In our case, it is easy to predict the costs because we assigned different portions of relevant data to each server.
+However, it is also straightforward in a real deployment scenario as the data distribution among servers is typically available or can be easily computed.
 Recall that by design, server 1 is responsible for transmitting the largest flows between other servers and the client.
 Therefore, our scheduling must take this information into consideration and ensure that server 1 has the largest minimum bandwidth guarantee for this particular operation.
 
-Though we want server 1 to transfer its data as fast as possible, we do not want to starve other servers.
+Though we want server 1 to transfer its data as fast as possible, we do not want to starve other servers of bandwidth.
 Therefore, we must also have reasonable minimum bandwidth guarantees for other servers.
-Through experimentation, we found the most suitable minimum bandwidth guarantees on the 1 Mbps link for servers 2, 3, and 4 are 0.3 Mbps, 0.2 Mbps and 0.1 Mbps respectively.
+Through experimentation, we found the most suitable minimum bandwidth guarantees on the 1 Mbps link for servers 2, 3, and 4 are 0.3 Mbps, 0.2 Mbps, and 0.1 Mbps respectively.
 We fixed these parameters and varied the minimum bandwidth guarantee for server 1 to study the network behaviour.
 As shown by the right bars in Figure~\ref{fig:micro_benchmark_total_time}, there is a noticeable performance gain when we increase the minimum bandwidth guarantee of server 1 from 0.5 Mbps to 0.8 Mbps.
 This shows that it is important to favour larger flows during a join operation to minimize the overall completion time.
 We also want to highlight that we see diminishing returns as we further increase the guarantee.
 This is caused by a significant increase in the completion time for other flows, hurting the overall performance.
-In the best case, with 0.8 Mbps minimum bandwidth guarantee for server 1, the average completion time of the client query is 154 seconds which gives us almost 15\% performance gain over the baseline implementation.
+In the best case, with a 0.8 Mbps minimum bandwidth guarantee for server 1, the average completion time of the client query is 154 seconds which gives us almost a 15\% performance gain over the baseline implementation.
 
 \begin{figure}
     \centering
@@ -280,9 +280,7 @@ We see that our experimental results match with our expectations.
     \caption{Sub query completion time}\label{fig:sub_query_completion_8}
 \end{figure}
 
-To understand how link capacity affects the perform.
-We also tested our micro benchmark by varying the link capacity.
-The result is shown in Figure~\ref{fig:varying_bd}.
+We also examined the effects of varying link capacity on our systems, with results shown in Figure~\ref{fig:varying_bd}.
 During each of the experiments, the system parameters, e.g.\ the minimum bandwidth guarantees for each server, are fixed while varying the total capacity of each link.
 We see that our system can adaptively work with different link capacities and our system consistently outperforms the baseline with no traffic scheduling.
 
@@ -295,10 +293,10 @@ We see that our system can adaptively work with different link capacities and ou
 
 While our results are promising, we would like to take a more principled approach to determine the theoretical gains possible for applying this
 technique in order to clearly identify potential bottlenecks.
-For example, we have implemented a more realistic data centre like topology with potentially large number of servers.
+We have tested our system under a more realistic data centre topology with a larger number of servers.
 However, we found that our system requires a lot of fine tuning for more complex topologies.
-A more thorough theoretical understanding of our system and approach could potentially enable us to automate this process, which in turn would allows us a more thorough evaluation on a larger scale with more realistic conditions.
-We feel that there is potential to significantly improve the performance of our current approach in several ways.
+A better theoretical understanding of our system and approach will enable us to automate this process, which in turn would allow us to perform a more thorough evaluation on a larger scale and with more realistic conditions.
+We believe that there is potential to significantly improve the performance of our current approach in several ways.
 For example, we currently buffer all results at each server before sending a reply.
 Streaming results back to the client as they are received may result in higher link utilization and increased efficiency.
 
@@ -309,9 +307,10 @@ Furthermore, our current query execution model is very simplistic and could be e
 We would also like to investigate other query types such as aggregation which we suspect would also benefit from our approach.
 This presents new challenges in network scheduling, especially in the face of concurrent queries of multiple different types.
 
-Another promising direction is to consider the other network topologies, such as fat trees, where there exist multiple paths between any two hosts.
-This provide opportunities to use a combination of network aware routing and minimum bandwidth guarantees to improve the overall performance of each query.
-We foresee that we will evaluate our network-aware system against regular routing protocols such as Open Shortest Path First (OSPF).
+Another promising direction is to consider other network topologies, such as fat trees, where there exist multiple paths between any two hosts.
+This provides opportunities to use a combination of network-aware routing and minimum bandwidth guarantees to improve the overall performance of each query.
+We can also exploit the multiple available paths to attempt to avoid flow collisions.
+We foresee that we will evaluate our network-aware system against standard routing protocols such as Open Shortest Path First (OSPF).
 
 Our current system also does not deal with the possibility of updates or replication.
 There is potential to further exploit SDN techniques by allowing low latency updates to data in the presence of the high bandwidth flows used
@@ -320,12 +319,13 @@ Replication also provides further opportunities for optimization as flows can be
 
 \section{Conclusion}
 
-In this work, we examined opportunities to apply software-defined network techniques to provide more efficient query processing over NoSQL databases.
+In this work, we examined methods of applying software-defined network techniques to provide more efficient query processing over NoSQL databases.
 We demonstrated a simple technique using smart network scheduling to improve the performance of distributed joins.
 Our preliminary technique provides a significant performance improvement over uninformed switching techniques.
 
-We also presented several opportunities to further exploit of software-defined network techniques to improve query processing.
-As software-defined networking becomes increasingly common in data centres, we feel similar techniques will become increasingly prevalent.  Little work has been done to exploit software-defined networking in the context of NoSQL databases and distributed data management.
+We also presented additional opportunities to further exploit software-defined networking techniques to improve query processing.
+Little work has been done to exploit software-defined networking in the context of NoSQL databases and distributed data management.
+As software-defined networking becomes increasingly common in data centres, we believe similar techniques will become increasingly prevalent.
 
 \bibliographystyle{abbrv}
 \bibliography{paper}
