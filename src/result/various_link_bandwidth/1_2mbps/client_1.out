@@ -1,0 +1,7 @@
+Operation completed, # of entries fetched: 15805 
+Total time cost is:  147167 ms 
+Total item to be read:15805
+Time spent to retrieve data from host 10.0.0.4: 48239 ms
+Time spent to retrieve data from host 10.0.0.3: 66618 ms
+Time spent to retrieve data from host 10.0.0.2: 83050 ms
+Time spent to retrieve data from host 10.0.0.1: 146163 ms
